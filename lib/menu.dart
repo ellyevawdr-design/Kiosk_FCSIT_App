@@ -167,17 +167,22 @@ class _BannerText extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Text(
-            "Order Now",
-            style: TextStyle(
-              color: Color(0xFF4A90E2),
-              fontWeight: FontWeight.bold,
+        GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(context, '/ordertype');
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text(
+              "Order Now",
+              style: TextStyle(
+                color: Color(0xFF4A90E2),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),

@@ -51,7 +51,7 @@ class OrderType extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/menu');
+                    Navigator.pushNamed(context, '/order');
                   },
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
