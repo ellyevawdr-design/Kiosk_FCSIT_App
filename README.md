@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # kiosk_fcsit_app
 # Network Clan Kiosk FCSIT App
 
@@ -27,7 +26,3 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
-=======
-# NetworkClan-Kiosk-FCSIT-App
-A Flutter project under TMA3084(SE Lab) by T01-G01-Network Clan for Kiosk FCSIT App
->>>>>>> main
