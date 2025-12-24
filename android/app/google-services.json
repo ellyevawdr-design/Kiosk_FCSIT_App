@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "818831202140",
+    "project_id": "kiosk-fcsit",
+    "storage_bucket": "kiosk-fcsit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:818831202140:android:28d3faa32149043d4c5399",
+        "android_client_info": {
+          "package_name": "com.example.networkclan_kiosk_fcsit_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwM4bUY4etJP2DNUabGdf29cf58W_4sdY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:818831202140:android:99e34bb2b51de56d4c5399",
+        "android_client_info": {
+          "package_name": "com.networkclan.kioskfcsitapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwM4bUY4etJP2DNUabGdf29cf58W_4sdY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
