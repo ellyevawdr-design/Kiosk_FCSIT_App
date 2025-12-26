@@ -8,7 +8,10 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: primary, title: const Text("Home")),
+      appBar: AppBar(
+        backgroundColor: const Color.fromRGBO(43, 108, 176, 1),
+        title: const Text("Home"),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
