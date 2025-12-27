@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:routemaster/routemaster.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -22,7 +23,9 @@ class Home extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, '/menu'),
+              onPressed: () {
+                Routemaster.of(context).push('/menu');
+              },
               child: const Text("View Menu"),
             ),
           ],

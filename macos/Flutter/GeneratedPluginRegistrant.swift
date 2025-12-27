@@ -5,10 +5,6 @@
 import FlutterMacOS
 import Foundation
 
-<<<<<<< HEAD
-
-func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-=======
 import cloud_firestore
 import firebase_auth
 import firebase_core

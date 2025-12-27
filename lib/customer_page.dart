@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:routemaster/routemaster.dart';
 
 class CustomerPage extends StatefulWidget {
   const CustomerPage({super.key});
@@ -11,9 +12,9 @@ class _CustomerPageState extends State<CustomerPage> {
   static const Color primaryBlue = Color(0xFF007BFF);
 
   final List<String> _imagesToPrecache = [
-    'assets/Images/coke.jpg',
-    'assets/Images/soup.jpg',
-    'assets/Images/cake.jpg',
+    'assets/images/coke.jpg',
+    'assets/images/soup.jpg',
+    'assets/images/cake.jpg',
   ];
 
   bool _imagesPrecached = false;
@@ -21,7 +22,6 @@ class _CustomerPageState extends State<CustomerPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
     if (!_imagesPrecached) {
       for (var img in _imagesToPrecache) {
         precacheImage(AssetImage(img), context);
@@ -37,7 +37,6 @@ class _CustomerPageState extends State<CustomerPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            /// Top Blue Background with Food Images
             Stack(
               children: [
                 Container(
@@ -60,18 +59,16 @@ class _CustomerPageState extends State<CustomerPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: const [
-                        _FoodImage('assets/Images/coke.jpg'),
-                        _FoodImage('assets/Images/soup.jpg'),
-                        _FoodImage('assets/Images/cake.jpg'),
+                        _FoodImage('assets/images/coke.jpg'),
+                        _FoodImage('assets/images/soup.jpg'),
+                        _FoodImage('assets/images/cake.jpg'),
                       ],
                     ),
                   ),
                 ),
               ],
             ),
-
             const SizedBox(height: 35),
-
             const Text(
               "Tap To Order",
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -86,12 +83,12 @@ class _CustomerPageState extends State<CustomerPage> {
               ),
             ),
             const SizedBox(height: 40),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 60.0),
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/home');
+                  print('Button pressed, going to /home');
+                  Routemaster.of(context).push('/home');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryBlue,
