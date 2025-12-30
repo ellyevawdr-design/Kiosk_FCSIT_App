@@ -33,7 +33,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   ) {
     ref
         .read(authControllerProvider.notifier)
-        .signUpWithEmailAndPassword(email, password, context);
+        .signUpWithEmailAndPassword(email, username, password, context);
   }
 
   @override
@@ -50,7 +50,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 const SizedBox(height: 32),
                 Center(
                   child: Image.asset(
-                    "assets/logo/unimas.png",
+                    "assets/logo/cooking.png",
                     height: 143,
                     width: 143,
                   ),
@@ -62,7 +62,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
-                    "Get the best food ,on the confort of your pack scheduling",
+                    "Get the best local ,on the confort of your home",
                     style: TextStyle(fontSize: 15),
                   ),
                 ),

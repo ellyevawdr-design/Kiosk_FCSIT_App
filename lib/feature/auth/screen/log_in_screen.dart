@@ -48,7 +48,7 @@ class _LogInScreenState extends ConsumerState<LogInScreen> {
                 const SizedBox(height: 32),
                 Center(
                   child: Image.asset(
-                    "assets/logo/unimas.png",
+                    "assets/logo/logo.png",
                     height: 143,
                     width: 143,
                   ),

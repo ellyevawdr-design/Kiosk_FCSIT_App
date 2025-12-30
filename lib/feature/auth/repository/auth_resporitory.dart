@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
-
 import 'package:networkclan_kiosk_fcsit_app/core/failure.dart';
 import 'package:networkclan_kiosk_fcsit_app/core/type_defs.dart';
 import 'package:networkclan_kiosk_fcsit_app/feature/auth/model/user_model.dart';
@@ -22,7 +21,6 @@ class AuthRepository {
   final FirebaseFirestore _firebaseFirestore;
   final FirebaseAuth _firebaseAuth;
   final FirebaseStorage _firebaseStorage;
-
   AuthRepository({
     required FirebaseFirestore firestore,
     required FirebaseAuth firebaseauth,
@@ -30,13 +28,13 @@ class AuthRepository {
   }) : _firebaseFirestore = firestore,
        _firebaseAuth = firebaseauth,
        _firebaseStorage = firebaseStorage;
-
   CollectionReference get _users =>
       _firebaseFirestore.collection(Firebaseconstants.usersCollection);
 
   Stream<User?> get authStateChange => _firebaseAuth.authStateChanges();
+  User? user = FirebaseAuth.instance.currentUser;
+  late UserModel _userModel;
 
-  /// ---------------- SIGN IN ----------------
   FutureEither<UserModel> signInWithEmailAndPassword(
     String email,
     String password,
@@ -48,38 +46,42 @@ class AuthRepository {
       );
       return right(UserModel(uid: _firebaseAuth.currentUser!.uid));
     } catch (e) {
-      return left(Failure(message: e.toString()));
+      return Left(Failure(message: e.toString()));
     }
   }
 
-  /// ---------------- SIGN UP ----------------
   FutureEither<UserModel> signUpWithEmailAndPassword(
     String email,
+    String username,
     String password,
   ) async {
     try {
-      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      final user = UserModel(uid: userCredential.user!.uid);
-
-      await _users.doc(user.uid).set(user.toJson());
-
-      return right(user);
+      _firebaseAuth
+          .createUserWithEmailAndPassword(email: email, password: password)
+          .then((userCredential) async {
+            if (userCredential.additionalUserInfo!.isNewUser) {
+              UserModel _userModel = UserModel(
+                uid: _firebaseAuth.currentUser!.uid,
+                username: username,
+              );
+              await _users
+                  .doc(_firebaseAuth.currentUser!.uid)
+                  .set(_userModel.toJson());
+            } else {
+              _userModel = await getUserData(userCredential.user!.uid).first;
+            }
+          });
+      return right(UserModel(uid: _firebaseAuth.currentUser!.uid));
     } catch (e) {
-      return left(Failure(message: e.toString()));
+      return Left(Failure(message: e.toString()));
     }
   }
 
-  /// ---------------- SIGN OUT ----------------
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
   }
 
-  /// ---------------- GET USER DATA ----------------
-  Stream<UserModel> getUserData(String uid) {
+  Stream<UserModel> getUserData(uid) {
     return _users
         .doc(uid)
         .snapshots()
@@ -88,14 +90,15 @@ class AuthRepository {
         );
   }
 
-  /// ---------------- UPDATE USER ----------------
-  FutureEither<void> updateUserData(UserModel user) async {
+  Either<dynamic, Future<void>> updateUserData(UserModel user) {
+    final userId = _firebaseAuth.currentUser!.uid;
+
     try {
-      final userId = _firebaseAuth.currentUser!.uid;
-      await _users.doc(userId).update(user.toJson());
-      return right(null);
+      return right(_users.doc(userId).update(user.toJson()));
+    } on FirebaseException catch (e) {
+      throw e.message!;
     } catch (e) {
-      return left(Failure(message: e.toString()));
+      return Left(Failure(message: e.toString()));
     }
   }
 }

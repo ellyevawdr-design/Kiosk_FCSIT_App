@@ -51,11 +51,13 @@ class AuthController extends AsyncNotifier<AsyncValue<void>> {
 
   void signUpWithEmailAndPassword(
     String email,
+    String username,
     String password,
     BuildContext context,
   ) async {
     final user = await _authRepository.signUpWithEmailAndPassword(
       email,
+      username,
       password,
     );
 
