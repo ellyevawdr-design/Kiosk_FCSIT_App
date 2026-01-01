@@ -1,28 +1,18 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// lib/feature/promotion/repository/promotion_repository.dart
+import 'package:networkclan_kiosk_fcsit_app/fakedata/fakedata.dart';
+import '../model/promotion_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:networkclan_kiosk_fcsit_app/feature/promotion/model/promotion_model.dart';
-import 'package:networkclan_kiosk_fcsit_app/providers/firebase_providers.dart';
-import 'package:networkclan_kiosk_fcsit_app/utils/firebaseconstants.dart';
 
-final promotionRepositoryProvider = Provider(
-  (ref) => PromotionRepository(
-    firebaseFirestore: ref.watch(firebaseFireStoreProvider),
-  ),
-);
+final promotionRepositoryProvider = Provider<PromotionRepository>((ref) {
+  return PromotionRepository();
+});
 
 class PromotionRepository {
-  final FirebaseFirestore _firebaseFirestore;
-  PromotionRepository({required FirebaseFirestore firebaseFirestore})
-    : _firebaseFirestore = firebaseFirestore;
-  CollectionReference get _promotions =>
-      _firebaseFirestore.collection(Firebaseconstants.promotionsCollection);
-  Stream<PromotionModel> getPromotions() {
-    return _promotions
-        .doc("2gcyqbQs4mQjeCjzxqeV")
-        .snapshots()
-        .map(
-          (event) =>
-              PromotionModel.fromJson((event.data() as Map<String, dynamic>)),
-        );
+  /// Offline-friendly: returns promotions from FakeData
+  Stream<List<PromotionModel>> getPromotions() {
+    final promotions = FakeData.promotions
+        .map((path) => PromotionModel(image: path))
+        .toList();
+    return Stream.value(promotions); // single-value stream
   }
 }

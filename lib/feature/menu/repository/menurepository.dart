@@ -1,40 +1,21 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// lib/feature/menu/repository/menurepository.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:networkclan_kiosk_fcsit_app/feature/menu/models/menu_model.dart';
-import 'package:networkclan_kiosk_fcsit_app/providers/firebase_providers.dart';
-import 'package:networkclan_kiosk_fcsit_app/utils/firebaseconstants.dart';
+import '../models/menu_model.dart';
+import '../../../fakedata/fakedata.dart';
 
-final menuRepositoryProvider = Provider(
-  (ref) =>
-      MenuRepository(firebaseFirestore: ref.watch(firebaseFireStoreProvider)),
+// Provider for offline menu repository
+final menuRepositoryProvider = Provider<FakeMenuRepository>(
+  (_) => FakeMenuRepository(),
 );
 
-class MenuRepository {
-  FirebaseFirestore _firebaseFirestore;
-  MenuRepository({required FirebaseFirestore firebaseFirestore})
-    : _firebaseFirestore = firebaseFirestore;
-  CollectionReference get _menus =>
-      _firebaseFirestore.collection(Firebaseconstants.menuCollection);
-
-  Stream<List<MenuModel>> getMenus() {
-    return _menus.limit(10).snapshots().map((event) {
-      List<MenuModel> menus = [];
-      for (var doc in event.docs) {
-        menus.add(MenuModel.fromJson(doc.data() as Map<String, dynamic>));
-      }
-      return menus;
-    });
+class FakeMenuRepository {
+  // Return all menus as a Stream
+  Stream<List<MenuModel>> getMenus() async* {
+    yield FakeData.menu;
   }
 
-  Stream<List<MenuModel>> getMenuById(String categoryId) {
-    return _menus.where("categoryId", isEqualTo: categoryId).snapshots().map((
-      event,
-    ) {
-      List<MenuModel> menus = [];
-      for (var doc in event.docs) {
-        menus.add(MenuModel.fromJson(doc.data() as Map<String, dynamic>));
-      }
-      return menus;
-    });
+  // Return menus filtered by categoryId as a Stream
+  Stream<List<MenuModel>> getMenuById(String categoryId) async* {
+    yield FakeData.menu.where((menu) => menu.categoryId == categoryId).toList();
   }
 }

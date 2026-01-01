@@ -20,6 +20,8 @@ PromotionModel _$PromotionModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PromotionModel {
+  String? get image =>
+      throw _privateConstructorUsedError; // single image path from FakeData
   List<String>? get images => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -34,7 +36,7 @@ abstract class $PromotionModelCopyWith<$Res> {
           PromotionModel value, $Res Function(PromotionModel) then) =
       _$PromotionModelCopyWithImpl<$Res, PromotionModel>;
   @useResult
-  $Res call({List<String>? images});
+  $Res call({String? image, List<String>? images});
 }
 
 /// @nodoc
@@ -50,9 +52,14 @@ class _$PromotionModelCopyWithImpl<$Res, $Val extends PromotionModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? image = freezed,
     Object? images = freezed,
   }) {
     return _then(_value.copyWith(
+      image: freezed == image
+          ? _value.image
+          : image // ignore: cast_nullable_to_non_nullable
+              as String?,
       images: freezed == images
           ? _value.images
           : images // ignore: cast_nullable_to_non_nullable
@@ -69,7 +76,7 @@ abstract class _$$PromotionModelImplCopyWith<$Res>
       __$$PromotionModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<String>? images});
+  $Res call({String? image, List<String>? images});
 }
 
 /// @nodoc
@@ -83,9 +90,14 @@ class __$$PromotionModelImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? image = freezed,
     Object? images = freezed,
   }) {
     return _then(_$PromotionModelImpl(
+      image: freezed == image
+          ? _value.image
+          : image // ignore: cast_nullable_to_non_nullable
+              as String?,
       images: freezed == images
           ? _value._images
           : images // ignore: cast_nullable_to_non_nullable
@@ -97,12 +109,17 @@ class __$$PromotionModelImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$PromotionModelImpl implements _PromotionModel {
-  _$PromotionModelImpl({final List<String>? images}) : _images = images;
+  _$PromotionModelImpl({this.image, final List<String>? images})
+      : _images = images;
 
   factory _$PromotionModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$PromotionModelImplFromJson(json);
 
+  @override
+  final String? image;
+// single image path from FakeData
   final List<String>? _images;
+// single image path from FakeData
   @override
   List<String>? get images {
     final value = _images;
@@ -114,7 +131,7 @@ class _$PromotionModelImpl implements _PromotionModel {
 
   @override
   String toString() {
-    return 'PromotionModel(images: $images)';
+    return 'PromotionModel(image: $image, images: $images)';
   }
 
   @override
@@ -122,13 +139,14 @@ class _$PromotionModelImpl implements _PromotionModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PromotionModelImpl &&
+            (identical(other.image, image) || other.image == image) &&
             const DeepCollectionEquality().equals(other._images, _images));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_images));
+  int get hashCode => Object.hash(
+      runtimeType, image, const DeepCollectionEquality().hash(_images));
 
   @JsonKey(ignore: true)
   @override
@@ -146,12 +164,15 @@ class _$PromotionModelImpl implements _PromotionModel {
 }
 
 abstract class _PromotionModel implements PromotionModel {
-  factory _PromotionModel({final List<String>? images}) = _$PromotionModelImpl;
+  factory _PromotionModel({final String? image, final List<String>? images}) =
+      _$PromotionModelImpl;
 
   factory _PromotionModel.fromJson(Map<String, dynamic> json) =
       _$PromotionModelImpl.fromJson;
 
   @override
+  String? get image;
+  @override // single image path from FakeData
   List<String>? get images;
   @override
   @JsonKey(ignore: true)

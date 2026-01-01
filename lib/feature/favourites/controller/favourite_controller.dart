@@ -1,8 +1,9 @@
+// lib/feature/favourites/controller/favourite_controller.dart
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:networkclan_kiosk_fcsit_app/feature/favourites/repository/favourite_repository.dart';
-import 'package:networkclan_kiosk_fcsit_app/feature/menu/models/menu_model.dart';
-import 'package:networkclan_kiosk_fcsit_app/utils/util.dart';
+import '../repository/favourite_repository.dart';
+import '../../menu/models/menu_model.dart';
+import '../../../utils/util.dart';
 
 final favouriteControllerProvider =
     AsyncNotifierProvider<FavouriteController, List<MenuModel>>(
@@ -10,7 +11,7 @@ final favouriteControllerProvider =
     );
 
 class FavouriteController extends AsyncNotifier<List<MenuModel>> {
-  late FavouriteRepository _favouriteRepository;
+  late FakeFavouriteRepository _favouriteRepository;
 
   @override
   Future<List<MenuModel>> build() async {
@@ -20,7 +21,6 @@ class FavouriteController extends AsyncNotifier<List<MenuModel>> {
 
   Future<void> addMenuToFavourite(MenuModel menu, BuildContext context) async {
     state = const AsyncLoading();
-
     try {
       await _favouriteRepository.addMenuItem(menu);
       state = AsyncValue.data([...state.value!, menu]);

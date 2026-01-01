@@ -86,6 +86,7 @@ flutter:
     - assets/banner/
     - assets/food/
     - assets/icons/
+    - assets/categories/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

@@ -1,31 +1,16 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:networkclan_kiosk_fcsit_app/fakedata/fakedata.dart';
 import 'package:networkclan_kiosk_fcsit_app/feature/categories/models/category_model.dart';
-import 'package:networkclan_kiosk_fcsit_app/providers/firebase_providers.dart';
-import 'package:networkclan_kiosk_fcsit_app/utils/firebaseconstants.dart';
 
-final categoryRepositoryProvider = Provider(
-  (ref) => CategoryRepository(
-    firebaseFirestore: ref.watch(firebaseFireStoreProvider),
-  ),
+// Fake repository provider that mimics the original Firebase repo
+final categoryRepositoryProvider = Provider<FakeCategoryRepository>(
+  (_) => FakeCategoryRepository(),
 );
 
-class CategoryRepository {
-  FirebaseFirestore _firebaseFirestore;
-  CategoryRepository({required FirebaseFirestore firebaseFirestore})
-    : _firebaseFirestore = firebaseFirestore;
-  CollectionReference get _categories =>
-      _firebaseFirestore.collection(Firebaseconstants.categoriesCollection);
-
+class FakeCategoryRepository {
+  // Keep the same method signature as the original Firebase repo
   Stream<List<CategoryModel>> getCategories() {
-    return _categories.snapshots().map((event) {
-      List<CategoryModel> categories = [];
-      for (var doc in event.docs) {
-        categories.add(
-          CategoryModel.fromJson(doc.data() as Map<String, dynamic>),
-        );
-      }
-      return categories;
-    });
+    // Return a stream with a single event containing FakeData
+    return Stream.value(FakeData.categoriesList);
   }
 }

@@ -13,18 +13,17 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.primaryColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
+        child: CustomScrollView(
+          slivers: [
+            // Header
+            SliverToBoxAdapter(
+              child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      "Order Your Favourite \n Fast Food!",
+                      "Order Your Favourite \nFast Food!",
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 20,
@@ -47,15 +46,27 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const Padding(
+            ),
+
+            // Search field
+            const SliverToBoxAdapter(
+              child: Padding(
                 padding: EdgeInsets.all(8.0),
                 child: SizedBox(height: 60, child: SearchField()),
               ),
-              const Padding(
+            ),
+
+            // Promotions
+            SliverToBoxAdapter(
+              child: const Padding(
                 padding: EdgeInsets.all(8.0),
-                child: PromotionsWidget(),
+                child: RepaintBoundary(child: PromotionsWidget()),
               ),
-              const Padding(
+            ),
+
+            // Categories title
+            const SliverToBoxAdapter(
+              child: Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -79,11 +90,22 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const Padding(
+            ),
+
+            // Categories
+            SliverToBoxAdapter(
+              child: const Padding(
                 padding: EdgeInsets.all(8.0),
-                child: SizedBox(height: 120, child: CategoryWidget()),
+                child: SizedBox(
+                  height: 120,
+                  child: RepaintBoundary(child: CategoryWidget()),
+                ),
               ),
-              const Padding(
+            ),
+
+            // Your Food title
+            const SliverToBoxAdapter(
+              child: Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -107,12 +129,16 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: AllMenuWidget(),
+            ),
+
+            // All Menu Items
+            SliverPadding(
+              padding: const EdgeInsets.all(8),
+              sliver: const SliverToBoxAdapter(
+                child: RepaintBoundary(child: AllMenuWidget()),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

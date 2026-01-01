@@ -1,26 +1,29 @@
+// lib/feature/favourites/repository/favourite_repository.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:networkclan_kiosk_fcsit_app/feature/menu/models/menu_model.dart';
 
-final favouriteRepositoryProvider = Provider<FavouriteRepository>((ref) {
-  final box = Hive.box("menuFavourites");
-  return FavouriteRepository(box);
-});
+final favouriteRepositoryProvider = Provider<FakeFavouriteRepository>(
+  (_) => FakeFavouriteRepository(),
+);
 
-class FavouriteRepository {
-  final Box<dynamic> menuItemBox;
+class FakeFavouriteRepository {
+  // In-memory list for offline testing
+  final List<MenuModel> _favouriteItems = [];
 
-  FavouriteRepository(this.menuItemBox);
+  // Get current favourites
+  Future<List<MenuModel>> getMenuItems() async {
+    return _favouriteItems;
+  }
 
+  // Add a menu item to favourites
   Future<void> addMenuItem(MenuModel menu) async {
-    await menuItemBox.add(menu.toJson());
+    _favouriteItems.add(menu);
   }
 
+  // Delete a menu item from favourites by index
   Future<void> deleteMenuItem(int index) async {
-    await menuItemBox.deleteAt(index);
-  }
-
-  List<MenuModel> getMenuItems() {
-    return menuItemBox.values.map((item) => MenuModel.fromJson(item)).toList();
+    if (index >= 0 && index < _favouriteItems.length) {
+      _favouriteItems.removeAt(index);
+    }
   }
 }

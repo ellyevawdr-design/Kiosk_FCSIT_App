@@ -1,21 +1,22 @@
+// lib/feature/categories/controller/category_controller.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:networkclan_kiosk_fcsit_app/feature/categories/models/category_model.dart';
-import 'package:networkclan_kiosk_fcsit_app/feature/categories/repository/category_repository.dart';
+import 'package:networkclan_kiosk_fcsit_app/fakedata/fakedata.dart';
+import '../models/category_model.dart';
+import '../repository/category_repository.dart';
 
-final categoriesContollerProvider =
-    AsyncNotifierProvider<CategoryController, AsyncValue<void>>(
+final categoriesControllerProvider =
+    AsyncNotifierProvider<CategoryController, List<CategoryModel>>(
       CategoryController.new,
     );
 
-final getCategoriesProvider = StreamProvider(
-  (ref) => ref.read(categoriesContollerProvider.notifier).getCategories(),
-);
+class CategoryController extends AsyncNotifier<List<CategoryModel>> {
+  late FakeCategoryRepository _categoryRepository;
 
-class CategoryController extends AsyncNotifier<AsyncValue<void>> {
-  late CategoryRepository _categoryRepository;
-  AsyncValue<void> build() {
+  @override
+  List<CategoryModel> build() {
     _categoryRepository = ref.watch(categoryRepositoryProvider);
-    return const AsyncValue.data(null);
+    // Return initial offline data
+    return FakeData.categoriesList;
   }
 
   Stream<List<CategoryModel>> getCategories() {

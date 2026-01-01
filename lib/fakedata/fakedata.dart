@@ -35,7 +35,7 @@ class FakeData {
     ),
     MenuModel(
       menuId: "4",
-      title: "Coka Cola",
+      title: "Coca Cola",
       description:
           "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis consequat pulvinar vehicula. Ut mattis consequat felis, a condimentum nisl eleifend et. Maecenas bibendum vulputate urna.",
       price: 2.00,

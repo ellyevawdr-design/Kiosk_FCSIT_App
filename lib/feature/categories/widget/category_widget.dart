@@ -1,19 +1,21 @@
+// lib/feature/categories/widget/category_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:networkclan_kiosk_fcsit_app/fakedata/fakedata.dart';
-import 'package:networkclan_kiosk_fcsit_app/feature/categories/controller/category_controller.dart';
-import 'package:networkclan_kiosk_fcsit_app/feature/categories/widget/category_item_widget.dart';
-import 'package:networkclan_kiosk_fcsit_app/feature/menu/screens/menu_by_category_id_screen.dart';
-import 'package:networkclan_kiosk_fcsit_app/utils/widgets/error_text.dart';
-import 'package:networkclan_kiosk_fcsit_app/utils/widgets/loader.dart';
+import '../controller/category_controller.dart';
+import 'category_item_widget.dart';
+import '../../menu/screens/menu_by_category_id_screen.dart';
+import '../../../utils/widgets/error_text.dart';
+import '../../../utils/widgets/loader.dart';
 
 class CategoryWidget extends ConsumerWidget {
   const CategoryWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final categories = ref.watch(getCategoriesProvider);
-    return categories.when(
+    // Watch the controller provider (returns AsyncValue<List<CategoryModel>>)
+    final categoriesAsync = ref.watch(categoriesControllerProvider);
+
+    return categoriesAsync.when(
       data: (data) {
         return ListView.builder(
           itemCount: data.length,
@@ -26,7 +28,7 @@ class CategoryWidget extends ConsumerWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => MenuByCategoryIdScreen(
-                      categoryId: data[index].categoryId.toString(),
+                      categoryId: data[index].categoryId ?? '',
                     ),
                   ),
                 );
@@ -36,8 +38,8 @@ class CategoryWidget extends ConsumerWidget {
           },
         );
       },
-      error: (error, stackTrace) => ErrorText(error: error.toString()),
       loading: () => const Loader(),
+      error: (error, stackTrace) => ErrorText(error: error.toString()),
     );
   }
 }
