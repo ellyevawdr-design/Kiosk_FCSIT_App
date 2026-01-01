@@ -25,21 +25,93 @@ class _SalesReportPageState extends State<SalesReportPage> {
 
   /// ================= SALES DATA =================
 
-  List<FlSpot> monthlySalesData() {
-    return List.generate(
-      30,
-      (i) => FlSpot((i + 1).toDouble(), (i * 5 + 30).toDouble()),
+  List<double> monthlySalesData() =>
+      List.generate(30, (i) => (i * 5 + 30).toDouble());
+
+  List<double> yearlySalesData() =>
+      List.generate(12, (i) => (i * 150 + 400).toDouble());
+
+  /// ================= BAR CHARTS =================
+
+  BarChartData _monthlyBarChart() {
+    final data = monthlySalesData();
+
+    return BarChartData(
+      alignment: BarChartAlignment.spaceAround,
+      maxY: 200,
+      titlesData: _barTitles(
+        bottom: (v) => v.toInt().toString(),
+        interval: 5,
+      ),
+      barGroups: List.generate(data.length, (i) {
+        return BarChartGroupData(
+          x: i + 1,
+          barRods: [
+            BarChartRodData(
+              toY: data[i],
+              width: 6,
+              borderRadius: BorderRadius.circular(4),
+              color: Colors.blue,
+            ),
+          ],
+        );
+      }),
     );
   }
 
-  List<FlSpot> yearlySalesData() {
-    return List.generate(
-      12,
-      (i) => FlSpot((i + 1).toDouble(), (i * 150 + 400).toDouble()),
+  BarChartData _yearlyBarChart() {
+    final data = yearlySalesData();
+
+    return BarChartData(
+      alignment: BarChartAlignment.spaceAround,
+      maxY: 2500,
+      titlesData: _barTitles(
+        bottom: (v) => months[v.toInt() - 1].substring(0, 3),
+        interval: 1,
+      ),
+      barGroups: List.generate(12, (i) {
+        return BarChartGroupData(
+          x: i + 1,
+          barRods: [
+            BarChartRodData(
+              toY: data[i],
+              width: 14,
+              borderRadius: BorderRadius.circular(6),
+              color: Colors.blue,
+            ),
+          ],
+        );
+      }),
     );
   }
 
-  /// ================= CASH FLOW DATA =================
+  FlTitlesData _barTitles({
+    required String Function(double) bottom,
+    required double interval,
+  }) {
+    return FlTitlesData(
+      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      leftTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          interval: 300,
+          getTitlesWidget: (v, _) =>
+              Text("RM${v.toInt()}", style: const TextStyle(fontSize: 10)),
+        ),
+      ),
+      bottomTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          interval: interval,
+          getTitlesWidget: (v, _) =>
+              Text(bottom(v), style: const TextStyle(fontSize: 10)),
+        ),
+      ),
+    );
+  }
+
+  /// ================= CASH FLOW =================
 
   BarChartData _cashFlowChart() {
     final moneyIn = [800, 900, 750, 1000, 1200, 1100, 1300, 1250, 1150, 1400, 1500, 1600];
@@ -72,16 +144,8 @@ class _SalesReportPageState extends State<SalesReportPage> {
         return BarChartGroupData(
           x: i,
           barRods: [
-            BarChartRodData(
-              toY: moneyIn[i].toDouble(),
-              width: 8,
-              color: Colors.green,
-            ),
-            BarChartRodData(
-              toY: moneyOut[i].toDouble(),
-              width: 8,
-              color: Colors.red,
-            ),
+            BarChartRodData(toY: moneyIn[i].toDouble(), width: 8, color: Colors.green),
+            BarChartRodData(toY: moneyOut[i].toDouble(), width: 8, color: Colors.red),
           ],
         );
       }),
@@ -113,51 +177,30 @@ class _SalesReportPageState extends State<SalesReportPage> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           const SizedBox(height: 16),
 
-          /// ================= MONTHLY SALES =================
-          _sectionWithDropdown(
-            "Monthly Sales",
-            selectedMonthly,
-            months,
-            (v) => setState(() => selectedMonthly = v),
-          ),
-          _chartCard(LineChart(_monthlyChart())),
+          _sectionWithDropdown("Monthly Sales", selectedMonthly, months,
+              (v) => setState(() => selectedMonthly = v)),
+          _chartCard(BarChart(_monthlyBarChart())),
 
           const SizedBox(height: 20),
 
-          /// ================= YEARLY SALES =================
-          _sectionWithDropdown(
-            "Yearly Sales",
-            selectedYearly,
-            years,
-            (v) => setState(() => selectedYearly = v),
-          ),
-          _chartCard(LineChart(_yearlyChart())),
+          _sectionWithDropdown("Yearly Sales", selectedYearly, years,
+              (v) => setState(() => selectedYearly = v)),
+          _chartCard(BarChart(_yearlyBarChart())),
 
           const SizedBox(height: 20),
 
-          /// ================= SALES REVENUE =================
-          _sectionWithDropdown(
-            "Sales Revenue",
-            selectedRevenueYear,
-            years,
-            (v) => setState(() => selectedRevenueYear = v),
-          ),
+          _sectionWithDropdown("Sales Revenue", selectedRevenueYear, years,
+              (v) => setState(() => selectedRevenueYear = v)),
           const SalesRevenueList(),
 
           const SizedBox(height: 20),
 
-          /// ================= CASH FLOW (GRAPH) =================
-          _sectionWithDropdown(
-            "Cash Flow",
-            selectedCashFlowYear,
-            years,
-            (v) => setState(() => selectedCashFlowYear = v),
-          ),
+          _sectionWithDropdown("Cash Flow", selectedCashFlowYear, years,
+              (v) => setState(() => selectedCashFlowYear = v)),
           _chartCard(BarChart(_cashFlowChart())),
 
           const SizedBox(height: 20),
 
-          /// ================= SALES PERSON =================
           const Text("Sales Person",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 8),
@@ -177,63 +220,7 @@ class _SalesReportPageState extends State<SalesReportPage> {
     );
   }
 
-  /// ================= LINE CHART CONFIG =================
-
-  LineChartData _monthlyChart() => LineChartData(
-    minX: 1,
-    maxX: 30,
-    minY: 0,
-    titlesData: _titlesData(
-      bottomInterval: 5,
-      bottom: (v) => v.toInt().toString(),
-    ),
-    lineBarsData: [_line(monthlySalesData())],
-  );
-
-  LineChartData _yearlyChart() => LineChartData(
-    minX: 1,
-    maxX: 12,
-    minY: 0,
-    titlesData: _titlesData(
-      bottomInterval: 1,
-      bottom: (v) => months[v.toInt() - 1].substring(0, 3),
-    ),
-    lineBarsData: [_line(yearlySalesData())],
-  );
-
-  LineChartBarData _line(List<FlSpot> data) => LineChartBarData(
-    spots: data,
-    isCurved: true,
-    barWidth: 3,
-    dotData: const FlDotData(show: false),
-  );
-
-  FlTitlesData _titlesData({
-    required double bottomInterval,
-    required String Function(double) bottom,
-  }) =>
-      FlTitlesData(
-        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            interval: 100,
-            getTitlesWidget: (v, _) =>
-                Text("RM${v.toInt()}", style: const TextStyle(fontSize: 10)),
-          ),
-        ),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            interval: bottomInterval,
-            getTitlesWidget: (v, _) =>
-                Text(bottom(v), style: const TextStyle(fontSize: 10)),
-          ),
-        ),
-      );
-
-  /// ================= ORIGINAL HELPERS =================
+  /// ================= HELPERS =================
 
   Widget _sectionWithDropdown(String title, String selected,
       List<String> items, ValueChanged<String> onChanged) =>
@@ -241,8 +228,7 @@ class _SalesReportPageState extends State<SalesReportPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title,
-              style:
-              const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           _compactDropdown(selected, items, onChanged),
         ],
       );
@@ -278,7 +264,7 @@ class _SalesReportPageState extends State<SalesReportPage> {
     ];
 
     int totalUnits =
-    data.fold(0, (sum, d) => sum + (d["units"] as int));
+        data.fold(0, (sum, d) => sum + (d["units"] as int));
 
     return Card(
       child: Column(
@@ -288,13 +274,10 @@ class _SalesReportPageState extends State<SalesReportPage> {
               DataColumn(label: Text("Sales Person")),
               DataColumn(label: Text("Units Sold")),
             ],
-            rows: data
-                .map((d) => DataRow(cells: [
+            rows: data.map((d) => DataRow(cells: [
               DataCell(Text(d["name"].toString())),
-
               DataCell(Text(d["units"].toString())),
-            ]))
-                .toList(),
+            ])).toList(),
           ),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -328,8 +311,7 @@ class SalesRevenueList extends StatelessWidget {
 
 class RevenueCard extends StatelessWidget {
   final String title, value, label, count;
-  const RevenueCard(this.title, this.value, this.label, this.count,
-      {super.key});
+  const RevenueCard(this.title, this.value, this.label, this.count, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -337,14 +319,12 @@ class RevenueCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         title: Text(title),
-        subtitle:
-        Text(value, style: const TextStyle(color: Colors.green)),
+        subtitle: Text(value, style: const TextStyle(color: Colors.green)),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(label),
-            Text(count,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(count, style: const TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
