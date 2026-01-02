@@ -10,26 +10,26 @@ class Menu extends StatefulWidget {
 class _MenuState extends State<Menu> {
   final List<Map<String, String>> foodItems = [
     {
-      "img": "assets/Images/sandwich.jpg",
+      "img": "assets/images/sandwich.jpg",
       "title": "Beef Sandwich",
       "price": "RM 3.00",
     },
     {
-      "img": "assets/Images/sandwich.jpg",
+      "img": "assets/images/sandwich.jpg",
       "title": "Ham Sandwich",
       "price": "RM 3.00",
     },
-    {"img": "assets/Images/cake.jpg", "title": "Cupcakes", "price": "RM 3.00"},
+    {"img": "assets/images/cake.jpg", "title": "Cupcakes", "price": "RM 3.00"},
     {
-      "img": "assets/Images/cake.jpg",
+      "img": "assets/images/cake.jpg",
       "title": "Chocolate Cake",
       "price": "RM 1.50",
     },
   ];
 
   final List<String> _imagesToPrecache = [
-    "assets/Images/sandwich.jpg",
-    "assets/Images/cake.jpg",
+    "assets/images/sandwich.jpg",
+    "assets/images/cake.jpg",
   ];
 
   bool _imagesPrecached = false;
@@ -93,7 +93,7 @@ class _MenuState extends State<Menu> {
                   children: const [
                     Expanded(child: _BannerText()),
                     SizedBox(width: 12),
-                    _BannerImage("assets/Images/sandwich.jpg"),
+                    _BannerImage("assets/images/sandwich.jpg"),
                   ],
                 ),
               ),
@@ -137,7 +137,7 @@ class _MenuState extends State<Menu> {
               ),
               const SizedBox(height: 16),
               const _PopularMealCard(
-                "assets/Images/sandwich.jpg",
+                "assets/images/sandwich.jpg",
                 "Beef Sandwich",
                 "RM 3.00",
               ),
@@ -167,17 +167,22 @@ class _BannerText extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Text(
-            "Order Now",
-            style: TextStyle(
-              color: Color(0xFF4A90E2),
-              fontWeight: FontWeight.bold,
+        GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(context, '/ordertype');
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text(
+              "Order Now",
+              style: TextStyle(
+                color: Color(0xFF4A90E2),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),

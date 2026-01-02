@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
+    "name": "kiosk_fcsit_app",
+    "short_name": "kiosk_fcsit_app",
+=======
     "name": "networkclan_kiosk_fcsit_app",
     "short_name": "networkclan_kiosk_fcsit_app",
+>>>>>>> main
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

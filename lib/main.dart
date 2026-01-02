@@ -9,6 +9,7 @@ import 'package:networkclan_kiosk_fcsit_app/router.dart';
 import 'package:networkclan_kiosk_fcsit_app/utils/color.dart';
 import 'package:networkclan_kiosk_fcsit_app/utils/widgets/error_text.dart';
 import 'package:networkclan_kiosk_fcsit_app/utils/widgets/loader.dart';
+import 'package:routemaster/routemaster.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +52,7 @@ class _MyAppState extends ConsumerState<MyApp> {
                 return loggedOutRoute;
               },
             ),
+            routeInformationParser: const RoutemasterParser(),
           ),
           error: (error, _) => ErrorText(error: error.toString()),
           loading: () => const Loader(),
