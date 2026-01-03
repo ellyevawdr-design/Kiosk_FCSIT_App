@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/cart_model.dart';
+import 'package:networkclan_kiosk_fcsit_app/models/cart_model.dart';
 import 'payment_success_page.dart';
 
 class QRPaymentPage extends StatelessWidget {

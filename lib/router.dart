@@ -12,13 +12,14 @@ import 'package:networkclan_kiosk_fcsit_app/home.dart';
 import 'package:networkclan_kiosk_fcsit_app/menu.dart';
 import 'package:networkclan_kiosk_fcsit_app/order.dart';
 import 'package:networkclan_kiosk_fcsit_app/order_type.dart';
+import 'package:networkclan_kiosk_fcsit_app/payment_method_page.dart';
 
 final loggedInRoute = RouteMap(
   routes: {
     '/': (_) => const MaterialPage(child: CustomerPage()),
     '/home': (_) => const MaterialPage(child: Home()),
     '/menu': (_) => const MaterialPage(child: Menu()),
-    '/order': (_) => const MaterialPage(child: Order()),
+    '/order': (_) => const MaterialPage(child: OrderPage()),
     '/order_type': (_) => const MaterialPage(child: OrderType()),
     '/logout': (_) => const MaterialPage(child: LogInScreen()),
     '/meal': (_) => const MaterialPage(child: MealPage()),
@@ -27,6 +28,7 @@ final loggedInRoute = RouteMap(
     '/all': (_) => const MaterialPage(child: AllPage()),
     '/cart': (_) => const MaterialPage(child: CartPage()),
     '/favorite': (_) => const MaterialPage(child: FavoritePage()),
+    '/payment-method': (_) => const MaterialPage(child: PaymentMethodPage()),
   },
 );
 

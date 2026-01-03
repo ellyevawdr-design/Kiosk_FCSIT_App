@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/cart_model.dart';
-import 'payment_method_page.dart';
+import '../payment_method_page.dart';
 
 class CheckoutPage extends StatelessWidget {
   const CheckoutPage({super.key});
