@@ -14,6 +14,7 @@ class DrinkPage extends StatefulWidget {
 
 class _DrinkPageState extends State<DrinkPage> {
   String _selectedCategory = "Drink";
+  String _searchText = "";
 
   final List<Map<String, String>> drinkItems = [
     {"title": "Cola", "price": "RM 2.00", "image": "assets/images/cola.png"},
@@ -51,6 +52,15 @@ class _DrinkPageState extends State<DrinkPage> {
     }
   }
 
+  /// 🔹 Filtered list for search
+  List<Map<String, String>> get _displayedItems {
+    if (_searchText.isEmpty) return drinkItems;
+
+    return drinkItems
+        .where((item) => item['title']!.toLowerCase().contains(_searchText))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,7 +76,16 @@ class _DrinkPageState extends State<DrinkPage> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            const SearchBar(),
+
+            /// 🔹 Functional SearchBar
+            SearchBar(
+              onChanged: (value) {
+                setState(() {
+                  _searchText = value.toLowerCase();
+                });
+              },
+            ),
+
             const SizedBox(height: 16),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -84,9 +103,9 @@ class _DrinkPageState extends State<DrinkPage> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: drinkItems.length,
+              itemCount: _displayedItems.length,
               itemBuilder: (context, index) {
-                final item = drinkItems[index];
+                final item = _displayedItems[index];
                 return FoodCard(
                   name: item['title']!,
                   price: item['price']!,

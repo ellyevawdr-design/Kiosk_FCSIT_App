@@ -14,6 +14,7 @@ class MealPage extends StatefulWidget {
 
 class _MealPageState extends State<MealPage> {
   String _selectedCategory = "Meal";
+  String _searchText = "";
 
   final List<Map<String, String>> mealItems = [
     {
@@ -55,6 +56,15 @@ class _MealPageState extends State<MealPage> {
     }
   }
 
+  /// 🔹 Filtered list for search
+  List<Map<String, String>> get _displayedItems {
+    if (_searchText.isEmpty) return mealItems;
+
+    return mealItems
+        .where((item) => item['title']!.toLowerCase().contains(_searchText))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,7 +80,16 @@ class _MealPageState extends State<MealPage> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            const SearchBar(),
+
+            /// 🔹 Functional SearchBar
+            SearchBar(
+              onChanged: (value) {
+                setState(() {
+                  _searchText = value.toLowerCase();
+                });
+              },
+            ),
+
             const SizedBox(height: 16),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -88,9 +107,9 @@ class _MealPageState extends State<MealPage> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: mealItems.length,
+              itemCount: _displayedItems.length,
               itemBuilder: (context, index) {
-                final item = mealItems[index];
+                final item = _displayedItems[index];
                 return FoodCard(
                   name: item['title']!,
                   price: item['price']!,

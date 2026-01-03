@@ -14,6 +14,7 @@ class AllPage extends StatefulWidget {
 
 class _AllPageState extends State<AllPage> {
   String _selectedCategory = "All";
+  String _searchText = "";
 
   final List<Map<String, String>> mealItems = [
     {
@@ -92,16 +93,27 @@ class _AllPageState extends State<AllPage> {
   }
 
   List<Map<String, String>> get _displayedItems {
+    List<Map<String, String>> baseList;
+
     switch (_selectedCategory) {
       case "Meal":
-        return mealItems;
+        baseList = mealItems;
+        break;
       case "Drink":
-        return drinkItems;
+        baseList = drinkItems;
+        break;
       case "Snack":
-        return snackItems;
+        baseList = snackItems;
+        break;
       default:
-        return allItems;
+        baseList = allItems;
     }
+
+    if (_searchText.isEmpty) return baseList;
+
+    return baseList
+        .where((item) => item['title']!.toLowerCase().contains(_searchText))
+        .toList();
   }
 
   @override
@@ -119,8 +131,18 @@ class _AllPageState extends State<AllPage> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            const SearchBar(),
+
+            /// 🔍 FUNCTIONAL SEARCH BAR
+            SearchBar(
+              onChanged: (value) {
+                setState(() {
+                  _searchText = value.toLowerCase();
+                });
+              },
+            ),
+
             const SizedBox(height: 16),
+
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -133,7 +155,9 @@ class _AllPageState extends State<AllPage> {
                 }).toList(),
               ),
             ),
+
             const SizedBox(height: 20),
+
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -159,6 +183,7 @@ class _AllPageState extends State<AllPage> {
                 );
               },
             ),
+
             const SizedBox(height: 30),
           ],
         ),

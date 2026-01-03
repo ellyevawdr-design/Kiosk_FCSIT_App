@@ -14,6 +14,7 @@ class SnackPage extends StatefulWidget {
 
 class _SnackPageState extends State<SnackPage> {
   String _selectedCategory = "Snack";
+  String _searchText = ""; // 🔹 Search text
 
   final List<Map<String, String>> snackItems = [
     {
@@ -51,6 +52,15 @@ class _SnackPageState extends State<SnackPage> {
     }
   }
 
+  // 🔹 Filtered list for search
+  List<Map<String, String>> get _displayedItems {
+    if (_searchText.isEmpty) return snackItems;
+
+    return snackItems
+        .where((item) => item['title']!.toLowerCase().contains(_searchText))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,7 +76,16 @@ class _SnackPageState extends State<SnackPage> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            const SearchBar(),
+
+            /// 🔹 Functional SearchBar
+            SearchBar(
+              onChanged: (value) {
+                setState(() {
+                  _searchText = value.toLowerCase();
+                });
+              },
+            ),
+
             const SizedBox(height: 16),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -84,9 +103,9 @@ class _SnackPageState extends State<SnackPage> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: snackItems.length,
+              itemCount: _displayedItems.length,
               itemBuilder: (context, index) {
-                final item = snackItems[index];
+                final item = _displayedItems[index];
                 return FoodCard(
                   name: item['title']!,
                   price: item['price']!,

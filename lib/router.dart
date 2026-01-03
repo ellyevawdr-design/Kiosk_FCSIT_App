@@ -5,6 +5,7 @@ import 'package:networkclan_kiosk_fcsit_app/drink_page.dart';
 import 'package:networkclan_kiosk_fcsit_app/favorite.dart';
 import 'package:networkclan_kiosk_fcsit_app/feature/auth/screen/log_in_screen.dart';
 import 'package:networkclan_kiosk_fcsit_app/meal_page.dart';
+import 'package:networkclan_kiosk_fcsit_app/profile_page.dart';
 import 'package:networkclan_kiosk_fcsit_app/snack_page.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:networkclan_kiosk_fcsit_app/customer_page.dart';
@@ -27,6 +28,7 @@ final loggedInRoute = RouteMap(
     '/all': (_) => const MaterialPage(child: AllPage()),
     '/cart': (_) => const MaterialPage(child: CartPage()),
     '/favorite': (_) => const MaterialPage(child: FavoritePage()),
+    '/profile': (_) => const MaterialPage(child: ProfilePage()),
   },
 );
 

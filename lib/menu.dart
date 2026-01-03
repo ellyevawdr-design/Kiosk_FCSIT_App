@@ -12,22 +12,22 @@ class Menu extends StatefulWidget {
 class _MenuState extends State<Menu> {
   final List<Map<String, String>> foodItems = [
     {
-      "img": "assets/images/sandwich_menu.jpg",
+      "image": "assets/images/sandwich_menu.jpg",
       "title": "Beef Sandwich",
       "price": "RM 3.00",
     },
     {
-      "img": "assets/images/sandwich_menu.jpg",
+      "image": "assets/images/sandwich_menu.jpg",
       "title": "Ham Sandwich",
       "price": "RM 3.00",
     },
     {
-      "img": "assets/images/choc_cake.png",
+      "image": "assets/images/choc_cake.png",
       "title": "Cupcakes",
       "price": "RM 3.00",
     },
     {
-      "img": "assets/images/choc_cake.png",
+      "image": "assets/images/choc_cake.png",
       "title": "Chocolate Cake",
       "price": "RM 1.50",
     },
@@ -35,7 +35,7 @@ class _MenuState extends State<Menu> {
 
   final List<Map<String, String>> popularMeals = [
     {
-      "img": "assets/images/sandwich_menu.jpg",
+      "image": "assets/images/sandwich_menu.jpg",
       "title": "Beef Sandwich",
       "price": "RM 3.00",
     },
@@ -43,6 +43,8 @@ class _MenuState extends State<Menu> {
 
   final List<String> _categories = ["All", "Meal", "Drink", "Snack"];
   String _selectedCategory = "All";
+
+  String _searchText = "";
 
   final manager = CartFavoriteManager.instance;
 
@@ -68,6 +70,10 @@ class _MenuState extends State<Menu> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredFoodItems = foodItems.where((item) {
+      return item['title']!.toLowerCase().contains(_searchText.toLowerCase());
+    }).toList();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -78,30 +84,24 @@ class _MenuState extends State<Menu> {
             children: [
               const SizedBox(height: 12),
 
-              // Top Bar: Menu icon, Location, Profile
+              /// TOP BAR
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Menu Icon with popup
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.menu, size: 28),
                     onSelected: (value) {
-                      switch (value) {
-                        case 'cart':
-                          Routemaster.of(context).replace('/cart');
-                          break;
-                        case 'favorite':
-                          Routemaster.of(context).replace('/favorite');
-                          break;
+                      if (value == 'cart') {
+                        Routemaster.of(context).replace('/cart');
+                      } else {
+                        Routemaster.of(context).replace('/favorite');
                       }
                     },
-                    itemBuilder: (context) => const [
+                    itemBuilder: (_) => const [
                       PopupMenuItem(value: 'cart', child: Text('Cart')),
                       PopupMenuItem(value: 'favorite', child: Text('Favorite')),
                     ],
                   ),
-
-                  // Location
                   Row(
                     children: const [
                       Icon(Icons.location_on_outlined, size: 20),
@@ -109,27 +109,29 @@ class _MenuState extends State<Menu> {
                       Text(
                         "FCSIT",
                         style: TextStyle(
-                          fontWeight: FontWeight.w600,
                           fontSize: 18,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
-
-                  // Profile Avatar
-                  const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.blue,
-                    child: Icon(Icons.person, color: Colors.white),
+                  GestureDetector(
+                    onTap: () {
+                      Routemaster.of(context).push('/profile');
+                    },
+                    child: const CircleAvatar(
+                      radius: 18,
+                      backgroundColor: Colors.blue,
+                      child: Icon(Icons.person, color: Colors.white),
+                    ),
                   ),
                 ],
               ),
 
               const SizedBox(height: 20),
 
-              // Banner
+              /// BANNER
               Container(
-                width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: const Color(0xFF4A90E2),
@@ -175,7 +177,6 @@ class _MenuState extends State<Menu> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 25),
                     SizedBox(
                       height: 90,
                       width: 120,
@@ -190,7 +191,7 @@ class _MenuState extends State<Menu> {
 
               const SizedBox(height: 20),
 
-              // Search Bar
+              /// SEARCH BAR
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -204,32 +205,30 @@ class _MenuState extends State<Menu> {
                   children: [
                     const Icon(Icons.search, color: Colors.black54),
                     const SizedBox(width: 10),
-                    const Expanded(
-                      child: Text(
-                        "Search here",
-                        style: TextStyle(color: Colors.black54, fontSize: 16),
+                    Expanded(
+                      child: TextField(
+                        onChanged: (value) {
+                          setState(() {
+                            _searchText = value;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          hintText: "Search here",
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
                       ),
                     ),
                     const Icon(Icons.mic_none, color: Colors.black54),
-                    const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.filter_list, size: 20),
-                    ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 16),
 
-              // Category Chips
+              /// CATEGORY CHIPS
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
                 child: Row(
                   children: _categories.map((category) {
                     final selected = _selectedCategory == category;
@@ -260,12 +259,11 @@ class _MenuState extends State<Menu> {
 
               const SizedBox(height: 20),
 
-              // Food Grid
+              /// FOOD GRID
               GridView.builder(
-                padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: foodItems.length,
+                itemCount: filteredFoodItems.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
@@ -273,27 +271,19 @@ class _MenuState extends State<Menu> {
                   childAspectRatio: 0.72,
                 ),
                 itemBuilder: (context, index) {
-                  final item = foodItems[index];
+                  final item = filteredFoodItems[index];
                   return FoodCard(
                     name: item['title']!,
                     price: item['price']!,
-                    image: item['img'],
+                    image: item['image'],
                     onAdd: () {
-                      manager.addToCart({
-                        "title": item['title']!,
-                        "price": item['price']!,
-                        "image": item['img']!,
-                      });
+                      manager.addToCart(item);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Added to Cart")),
                       );
                     },
                     onFavorite: () {
-                      manager.addToFavorite({
-                        "title": item['title']!,
-                        "price": item['price']!,
-                        "image": item['img']!,
-                      });
+                      manager.addToFavorite(item);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Added to Favorite")),
                       );
@@ -304,7 +294,7 @@ class _MenuState extends State<Menu> {
 
               const SizedBox(height: 20),
 
-              // Popular Meals
+              /// POPULAR MEALS
               const Text(
                 "Popular Meals",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -313,25 +303,17 @@ class _MenuState extends State<Menu> {
               Column(
                 children: popularMeals.map((item) {
                   return PopularMealCard(
-                    item['img']!,
+                    item['image']!,
                     item['title']!,
                     item['price']!,
                     onAdd: () {
-                      manager.addToCart({
-                        "title": item['title']!,
-                        "price": item['price']!,
-                        "image": item['img']!,
-                      });
+                      manager.addToCart(item);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Added to Cart")),
                       );
                     },
                     onFavorite: () {
-                      manager.addToFavorite({
-                        "title": item['title']!,
-                        "price": item['price']!,
-                        "image": item['img']!,
-                      });
+                      manager.addToFavorite(item);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Added to Favorite")),
                       );
@@ -349,7 +331,7 @@ class _MenuState extends State<Menu> {
   }
 }
 
-// FoodCard with callbacks
+/// FOOD CARD
 class FoodCard extends StatelessWidget {
   final String name;
   final String price;
@@ -375,13 +357,8 @@ class FoodCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: image != null
-                ? Image.asset(image!, fit: BoxFit.contain)
-                : const Icon(Icons.fastfood, size: 40, color: Colors.white),
-          ),
+          Expanded(child: Image.asset(image!, fit: BoxFit.contain)),
           const SizedBox(height: 8),
           Text(
             name,
@@ -410,7 +387,7 @@ class FoodCard extends StatelessWidget {
   }
 }
 
-// PopularMealCard with callbacks
+/// POPULAR MEAL CARD
 class PopularMealCard extends StatelessWidget {
   final String img;
   final String title;
@@ -438,7 +415,7 @@ class PopularMealCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Image.asset(img, height: 60, width: 60, fit: BoxFit.cover),
+          Image.asset(img, height: 60, width: 60),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
