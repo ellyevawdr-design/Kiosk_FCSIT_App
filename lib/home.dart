@@ -4,29 +4,107 @@ import 'package:routemaster/routemaster.dart';
 class Home extends StatelessWidget {
   const Home({super.key});
 
-  static const Color primary = Color(0xFF2B6CB0);
+  static const Color primaryBlue = Color(0xFF4F86D8);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+
+      // ===== APP BAR =====
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(43, 108, 176, 1),
-        title: const Text("Home"),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Routemaster.of(context).pop();
+          },
+        ),
+        actions: const [
+          Icon(Icons.more_vert, color: Colors.black),
+          SizedBox(width: 8),
+        ],
       ),
-      body: Center(
+
+      // ===== BODY =====
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 24),
+
+            // ===== TITLE =====
             const Text(
-              "Welcome to FCSIT Kiosk",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              'Would you like to\nself-service or\nself-pickup?',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                height: 1.3,
+              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Routemaster.of(context).push('/menu');
-              },
-              child: const Text("View Menu"),
+
+            const SizedBox(height: 40),
+
+            // ===== SELF-SERVICE BUTTON =====
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryBlue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  //go to menu
+                  Routemaster.of(context).push('/menu');
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.restaurant, color: Colors.white),
+                    SizedBox(width: 12),
+                    Text(
+                      'Self-service',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ===== SELF-PICKUP BUTTON =====
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryBlue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  //go to menu
+                  Routemaster.of(context).push('/menu');
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.shopping_bag, color: Colors.white),
+                    SizedBox(width: 12),
+                    Text(
+                      'Self-pickup',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

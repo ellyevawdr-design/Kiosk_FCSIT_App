@@ -47,9 +47,9 @@ class _MyAppState extends ConsumerState<MyApp> {
               routesBuilder: (context) {
                 if (data != null) {
                   getData(ref, data);
-                  return loggedInRoute;
                 }
-                return loggedOutRoute;
+                //Always go to loggedInRoute (MainScreen)
+                return loggedInRoute;
               },
             ),
             routeInformationParser: const RoutemasterParser(),

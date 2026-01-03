@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:networkclan_kiosk_fcsit_app/all_page.dart';
+import 'package:networkclan_kiosk_fcsit_app/cart.dart';
+import 'package:networkclan_kiosk_fcsit_app/drink_page.dart';
+import 'package:networkclan_kiosk_fcsit_app/favorite.dart';
 import 'package:networkclan_kiosk_fcsit_app/feature/auth/screen/log_in_screen.dart';
+import 'package:networkclan_kiosk_fcsit_app/meal_page.dart';
+import 'package:networkclan_kiosk_fcsit_app/snack_page.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:networkclan_kiosk_fcsit_app/customer_page.dart';
 import 'package:networkclan_kiosk_fcsit_app/home.dart';
@@ -15,6 +21,12 @@ final loggedInRoute = RouteMap(
     '/order': (_) => const MaterialPage(child: Order()),
     '/order_type': (_) => const MaterialPage(child: OrderType()),
     '/logout': (_) => const MaterialPage(child: LogInScreen()),
+    '/meal': (_) => const MaterialPage(child: MealPage()),
+    '/drink': (_) => const MaterialPage(child: DrinkPage()),
+    '/snack': (_) => const MaterialPage(child: SnackPage()),
+    '/all': (_) => const MaterialPage(child: AllPage()),
+    '/cart': (_) => const MaterialPage(child: CartPage()),
+    '/favorite': (_) => const MaterialPage(child: FavoritePage()),
   },
 );
 

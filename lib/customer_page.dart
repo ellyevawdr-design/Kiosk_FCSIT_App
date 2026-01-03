@@ -1,125 +1,128 @@
 import 'package:flutter/material.dart';
 import 'package:routemaster/routemaster.dart';
 
-class CustomerPage extends StatefulWidget {
+class CustomerPage extends StatelessWidget {
   const CustomerPage({super.key});
 
   @override
-  State<CustomerPage> createState() => _CustomerPageState();
-}
-
-class _CustomerPageState extends State<CustomerPage> {
-  static const Color primaryBlue = Color(0xFF007BFF);
-
-  final List<String> _imagesToPrecache = [
-    'assets/images/coke.jpg',
-    'assets/images/soup.jpg',
-    'assets/images/cake.jpg',
-  ];
-
-  bool _imagesPrecached = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_imagesPrecached) {
-      for (var img in _imagesToPrecache) {
-        precacheImage(AssetImage(img), context);
-      }
-      _imagesPrecached = true;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+      body: SafeArea(
         child: Column(
           children: [
-            Stack(
-              children: [
-                Container(
-                  height: 330,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: primaryBlue,
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(120),
-                      bottomRight: Radius.circular(120),
+            // ===== TOP IMAGE SECTION =====
+            SizedBox(
+              height: screenHeight * 0.45,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  // Blue background shape
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: 220,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF1E88E5),
+                        borderRadius: BorderRadius.vertical(
+                          bottom: Radius.circular(160),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                Positioned(
-                  top: 80,
-                  left: 30,
-                  right: 30,
-                  child: SizedBox(
-                    height: 200,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: const [
-                        _FoodImage('assets/images/coke.jpg'),
-                        _FoodImage('assets/images/soup.jpg'),
-                        _FoodImage('assets/images/cake.jpg'),
-                      ],
+
+                  // Drink (left)
+                  Positioned(
+                    left: 32,
+                    top: 60,
+                    child: Image.asset(
+                      'assets/images/cola.png',
+                      height: 140,
+                      fit: BoxFit.contain,
                     ),
                   ),
-                ),
-              ],
+
+                  // Cake (right)
+                  Positioned(
+                    right: 32,
+                    top: 70,
+                    child: Image.asset(
+                      'assets/images/choc_cake.png',
+                      height: 130,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+
+                  // Bowl (center front)
+                  Positioned(
+                    bottom: -10,
+                    child: Image.asset(
+                      'assets/images/bubur.png',
+                      height: 110,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 35),
+
+            const SizedBox(height: 32),
+
+            // ===== TEXT SECTION =====
             const Text(
-              "Tap To Order",
+              'Tap To Order',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
+
+            const SizedBox(height: 16),
+
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 28.0),
+              padding: EdgeInsets.symmetric(horizontal: 40),
               child: Text(
-                "Order your favorite meal for self–service or self–pickup",
+                'Order your favorite meal\nfor self-service or self-pickup',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 15, color: Colors.black87),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                  height: 1.5,
+                ),
               ),
             ),
-            const SizedBox(height: 40),
+
+            const Spacer(),
+
+            // ===== BUTTON =====
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 60.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  print('Button pressed, going to /home');
-                  Routemaster.of(context).push('/home');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryBlue,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+              padding: const EdgeInsets.only(bottom: 32),
+              child: SizedBox(
+                width: 180,
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4A90E2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  onPressed: () {
+                    //Navigate to home
+                    Routemaster.of(context).push('/home');
+                  },
+                  child: const Text(
+                    'Tap To Order',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
-                child: const Text(
-                  "Tap To Order",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
               ),
             ),
-            const SizedBox(height: 40),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _FoodImage extends StatelessWidget {
-  final String assetPath;
-  const _FoodImage(this.assetPath);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 90,
-      child: Image.asset(assetPath, fit: BoxFit.contain, cacheWidth: 180),
     );
   }
 }
