@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:networkclan_kiosk_fcsit_app/payment_success_page.dart';
 import 'package:networkclan_kiosk_fcsit_app/utils/widgets/cart_favorrite_manager.dart';
 import 'qr_payment_page.dart';
 import 'order_tracking_page.dart';
@@ -118,7 +119,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             const SizedBox(height: 12),
 
             _paymentCard(
-              title: "Cash on Delivery",
+              title: "Cash",
               icon: Icons.payments,
               method: 1,
             ),

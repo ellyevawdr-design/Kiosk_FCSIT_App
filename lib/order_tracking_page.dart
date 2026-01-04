@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/cart_model.dart';
+import 'package:networkclan_kiosk_fcsit_app/models/cart_model.dart';
 
 class OrderTrackingPage extends StatefulWidget {
   final String orderNo;
@@ -16,7 +16,6 @@ class OrderTrackingPage extends StatefulWidget {
 }
 
 class _OrderTrackingPageState extends State<OrderTrackingPage> {
-  // UPDATED STEPS
   final List<String> steps = ["Menu", "Cart", "Checkout"];
   int currentStep = 0;
 
@@ -28,10 +27,9 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
     _simulateOrderProgress();
   }
 
-  void _simulateOrderProgress() async {
-    setState(() => currentStep = 1);
-
-    for (int i = currentStep; i < steps.length; i++) {
+  /// FIXED ORDER PROGRESSION
+  Future<void> _simulateOrderProgress() async {
+    for (int i = 0; i < steps.length; i++) {
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
       setState(() {
@@ -66,6 +64,8 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool orderCompleted = currentStep == steps.length - 1;
+
     return Scaffold(
       appBar: AppBar(title: const Text("Track Order")),
       body: Padding(
@@ -73,12 +73,13 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Order No: ${widget.orderNo}",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              "Order No: ${widget.orderNo}",
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 24),
 
-            // Progress bar
+            /// ===== PROGRESS BAR (UNCHANGED DESIGN) =====
             Row(
               children: List.generate(steps.length * 2 - 1, (index) {
                 if (index.isEven) {
@@ -182,15 +183,17 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
 
             const SizedBox(height: 16),
 
-            // Final step button
-            if (currentStep == steps.length - 1)
+            /// ===== FINAL BUTTON =====
+            if (orderCompleted)
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.popUntil(
-                        context, (route) => route.isFirst);
+                      context,
+                      (route) => route.isFirst,
+                    );
                   },
                   child: const Text("Order Completed"),
                 ),
