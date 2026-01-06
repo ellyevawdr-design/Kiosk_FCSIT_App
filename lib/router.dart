@@ -29,8 +29,6 @@ final loggedInRoute = RouteMap(
     '/all': (_) => const MaterialPage(child: AllPage()),
     '/cart': (_) => const MaterialPage(child: CartPage()),
     '/favorite': (_) => const MaterialPage(child: FavoritePage()),
-    '/payment-method': (_) => const MaterialPage(child: PaymentMethodPage()),
-    '/profile': (_) => const MaterialPage(child: ProfilePage()),
   },
 );
 
