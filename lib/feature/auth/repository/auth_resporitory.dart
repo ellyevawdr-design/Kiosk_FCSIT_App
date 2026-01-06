@@ -42,11 +42,21 @@ class AuthRepository {
     String password,
   ) async {
     try {
-      await _firebaseAuth.signInWithEmailAndPassword(
+      final credential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return right(UserModel(uid: _firebaseAuth.currentUser!.uid));
+      final user = credential.user!;
+      final snapshot = await _users.doc(user.uid).get();
+
+      if (snapshot.exists) {
+        final userModel = UserModel.fromJson(
+          snapshot.data() as Map<String, dynamic>,
+        );
+        return right(userModel);
+      } else {
+        return left(Failure(message: "User data not found"));
+      }
     } catch (e) {
       return left(Failure(message: e.toString()));
     }
@@ -63,7 +73,7 @@ class AuthRepository {
         password: password,
       );
 
-      final user = UserModel(uid: userCredential.user!.uid);
+      final user = UserModel(uid: userCredential.user!.uid, email: email);
 
       await _users.doc(user.uid).set(user.toJson());
 

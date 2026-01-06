@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart' hide SearchBar;
+import 'package:flutter/material.dart';
 import 'package:networkclan_kiosk_fcsit_app/utils/widgets/cart_favorrite_manager.dart';
 import 'package:routemaster/routemaster.dart';
 import '../utils/widgets/food_card.dart';
 import '../utils/widgets/category_chip.dart';
-import '../utils/widgets/search_bar.dart';
+import '../utils/widgets/search_bar.dart' hide SearchBar;
 
 class SnackPage extends StatefulWidget {
   const SnackPage({super.key});
@@ -52,7 +52,7 @@ class _SnackPageState extends State<SnackPage> {
     }
   }
 
-  // 🔹 Filtered list for search
+  //Filtered list for search
   List<Map<String, String>> get _displayedItems {
     if (_searchText.isEmpty) return snackItems;
 
@@ -77,7 +77,7 @@ class _SnackPageState extends State<SnackPage> {
           children: [
             const SizedBox(height: 10),
 
-            /// 🔹 Functional SearchBar
+            //SearchBar
             SearchBar(
               onChanged: (value) {
                 setState(() {

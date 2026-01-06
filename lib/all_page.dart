@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart' hide SearchBar;
+import 'package:flutter/material.dart';
 import 'package:networkclan_kiosk_fcsit_app/utils/widgets/cart_favorrite_manager.dart';
 import 'package:networkclan_kiosk_fcsit_app/utils/widgets/category_chip.dart';
-import 'package:networkclan_kiosk_fcsit_app/utils/widgets/search_bar.dart';
+import 'package:networkclan_kiosk_fcsit_app/utils/widgets/search_bar.dart'
+    hide SearchBar;
 import 'package:routemaster/routemaster.dart';
 import '../utils/widgets/food_card.dart';
 
@@ -132,7 +133,7 @@ class _AllPageState extends State<AllPage> {
           children: [
             const SizedBox(height: 10),
 
-            /// 🔍 FUNCTIONAL SEARCH BAR
+            //SEARCH BAR
             SearchBar(
               onChanged: (value) {
                 setState(() {

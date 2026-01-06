@@ -13,10 +13,13 @@ class SignUpScreen extends ConsumerStatefulWidget {
 }
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
-  final GlobalKey _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _username = TextEditingController();
   final _password = TextEditingController();
+
+  bool _isLoading = false;
+
   @override
   void dispose() {
     _email.dispose();
@@ -25,15 +28,21 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     super.dispose();
   }
 
-  signUpWithAndPassword(
-    BuildContext context,
-    String email,
-    String username,
-    String password,
-  ) {
-    ref
+  Future<void> _signUp(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    await ref
         .read(authControllerProvider.notifier)
-        .signUpWithEmailAndPassword(email, password, context);
+        .signUpWithEmailAndPassword(
+          _email.text.trim(),
+          _password.text.trim(),
+          _username.text.trim(),
+          context,
+        );
+
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -45,113 +54,123 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
-            child: Column(
-              children: [
-                const SizedBox(height: 32),
-                Center(
-                  child: Image.asset(
-                    "assets/logo/unimas.png",
-                    height: 143,
-                    width: 143,
-                  ),
-                ),
-                const Text(
-                  "Welcome Back",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                ),
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    "Get the best food ,on the confort of your pack scheduling",
-                    style: TextStyle(fontSize: 15),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: _email,
-                  hintText: "Enter your email",
-                ),
-                const SizedBox(height: 32),
-                CustomTextField(
-                  controller: _username,
-                  hintText: "Enter username",
-                ),
-                const SizedBox(height: 32),
-                CustomTextField(
-                  controller: _password,
-                  hintText: "Enter your password",
-                ),
-                const Center(
-                  child: Text(
-                    "Forgot Password",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 32),
+                  Center(
+                    child: Image.asset(
+                      "assets/logo/unimas.png",
+                      height: 143,
+                      width: 143,
                     ),
                   ),
-                ),
-                const SizedBox(height: 15),
-                SizedBox(
-                  width: 343,
-                  height: 63,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      signUpWithAndPassword(
-                        context,
-                        _email.text,
-                        _username.text,
-                        _password.text,
-                      );
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Welcome Back",
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      "Get the best food, on the comfort of your pack scheduling",
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  CustomTextField(
+                    controller: _email,
+                    hintText: "Enter your email",
+                    validator: (value) {
+                      if (value == null || value.isEmpty)
+                        return 'Email cannot be empty';
+                      if (!value.contains('@')) return 'Enter a valid email';
+                      return null;
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: const Text(
-                      "Register",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LogInScreen(),
-                      ),
-                    );
-                  },
-                  child: RichText(
-                    text: TextSpan(
-                      text: "Already have an account ?",
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w400,
-                      ),
-                      children: const [
-                        TextSpan(
-                          text: "SignIn ",
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.lightBlue,
-                            fontWeight: FontWeight.w400,
-                          ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _username,
+                    hintText: "Enter username",
+                    validator: (value) {
+                      if (value == null || value.isEmpty)
+                        return 'Username cannot be empty';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _password,
+                    hintText: "Enter your password",
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty)
+                        return 'Password cannot be empty';
+                      if (value.length < 6)
+                        return 'Password must be at least 6 characters';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : () => _signUp(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ],
+                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              "Register",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: _isLoading
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LogInScreen(),
+                              ),
+                            );
+                          },
+                    child: RichText(
+                      text: TextSpan(
+                        text: "Already have an account? ",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w400,
+                        ),
+                        children: const [
+                          TextSpan(
+                            text: "Sign In",
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.lightBlue,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

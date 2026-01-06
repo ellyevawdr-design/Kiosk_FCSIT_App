@@ -25,37 +25,54 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
-  UserModel? userModel;
-
-  void getData(WidgetRef ref, User data) async {
-    userModel = await ref
-        .watch(authControllerProvider.notifier)
-        .getUserData(data.uid)
-        .first;
-    ref.read(userProvider.notifier).update((state) => userModel);
+  /// Fetch Firestore user data after FirebaseAuth login
+  Future<void> loadUserData(User user) async {
+    final stream = ref
+        .read(authControllerProvider.notifier)
+        .getUserData(user.uid);
+    final userModel = await stream.first; // get current Firestore data
+    ref.read(userProvider.notifier).state = userModel;
   }
 
   @override
   Widget build(BuildContext context) {
-    return ref
-        .watch(authStateChangeProvider)
-        .when(
-          data: (data) => MaterialApp.router(
-            color: AppColor.primaryColor,
+    final authState = ref.watch(authStateChangeProvider);
+
+    return authState.when(
+      loading: () => const MaterialApp(home: Loader()),
+      error: (error, _) =>
+          MaterialApp(home: ErrorText(error: error.toString())),
+      data: (firebaseUser) {
+        // User not logged in
+        if (firebaseUser == null) {
+          return MaterialApp.router(
             debugShowCheckedModeBanner: false,
+            color: AppColor.primaryColor,
             routerDelegate: RoutemasterDelegate(
-              routesBuilder: (context) {
-                if (data != null) {
-                  getData(ref, data);
-                }
-                //Always go to loggedInRoute (MainScreen)
-                return loggedInRoute;
-              },
+              routesBuilder: (_) => loggedOutRoute,
             ),
             routeInformationParser: const RoutemasterParser(),
+          );
+        }
+
+        // User logged in → load Firestore user data
+        final userModel = ref.watch(userProvider);
+        if (userModel == null) {
+          // Firestore data not loaded yet → show loader while fetching
+          loadUserData(firebaseUser); // async fetch
+          return const MaterialApp(home: Loader());
+        }
+
+        // Firestore data loaded → go to main page
+        return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          color: AppColor.primaryColor,
+          routerDelegate: RoutemasterDelegate(
+            routesBuilder: (_) => loggedInRoute,
           ),
-          error: (error, _) => ErrorText(error: error.toString()),
-          loading: () => const Loader(),
+          routeInformationParser: const RoutemasterParser(),
         );
+      },
+    );
   }
 }

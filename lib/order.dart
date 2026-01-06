@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:networkclan_kiosk_fcsit_app/utils/widgets/cart_favorrite_manager.dart';
 import 'package:routemaster/routemaster.dart';
-import 'payment_method_page.dart';
+import 'package:networkclan_kiosk_fcsit_app/payment_method_page.dart';
 
 class OrderPage extends StatelessWidget {
   const OrderPage({super.key});
@@ -11,7 +11,7 @@ class OrderPage extends StatelessWidget {
     for (var item in CartFavoriteManager.instance.cartItems) {
       final price =
           double.tryParse(item['price']!.replaceAll(RegExp(r'[^0-9.]'), '')) ??
-              0;
+          0;
       total += price;
     }
     return total;
@@ -53,10 +53,7 @@ class OrderPage extends StatelessWidget {
       // ===== BODY =====
       body: manager.cartItems.isEmpty
           ? const Center(
-              child: Text(
-                "Your cart is empty",
-                style: TextStyle(fontSize: 16),
-              ),
+              child: Text("Your cart is empty", style: TextStyle(fontSize: 16)),
             )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -89,8 +86,7 @@ class OrderPage extends StatelessWidget {
                                     width: 60,
                                     height: 60,
                                     color: Colors.grey.shade200,
-                                    child:
-                                        const Icon(Icons.fastfood, size: 30),
+                                    child: const Icon(Icons.fastfood, size: 30),
                                   ),
                           ),
 

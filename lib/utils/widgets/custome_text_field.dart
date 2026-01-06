@@ -9,6 +9,8 @@ class CustomTextField extends StatelessWidget {
   final bool? obscureText;
   final VoidCallback? onPressedSuffixIcon;
   final ValueChanged<String>? onChanged;
+  final String? Function(String?)? validator; // <-- added
+
   CustomTextField({
     super.key,
     required this.controller,
@@ -19,6 +21,7 @@ class CustomTextField extends StatelessWidget {
     this.onPressedSuffixIcon,
     this.obscureText,
     this.onChanged,
+    this.validator, // <-- added
   });
 
   @override
@@ -26,6 +29,7 @@ class CustomTextField extends StatelessWidget {
     controller: controller,
     obscureText: obscureText ?? false,
     onChanged: onChanged,
+    validator: validator, // <-- added
     decoration: InputDecoration(
       labelText: labelText,
       hintText: hintText,
