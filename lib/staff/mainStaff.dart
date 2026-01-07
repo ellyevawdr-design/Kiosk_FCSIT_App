@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'inventory.dart';
 import 'staff.dart';
 import 'Order.dart';
 
 class mainstaff extends StatefulWidget {
-  final String staffName;
-
-  const mainstaff({super.key, required this.staffName});
+  const mainstaff({super.key});
 
   @override
   State<mainstaff> createState() => _mainstaffState();
@@ -17,18 +18,43 @@ class _mainstaffState extends State<mainstaff> {
 
   late final List<Widget> tabs;
 
+  String? staffName;
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    tabs = [
-      StaffPage(staffName: widget.staffName),
-      Order(staffName: widget.staffName),
-      inventory(),
-    ];
+    _loadStaffName();
+  }
+
+  Future<void> _loadStaffName() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    setState(() {
+      staffName = doc['name'];
+      isLoading = false;
+
+      tabs = [
+        StaffPage(staffName: staffName!),
+        OrderScreen(staffName: staffName!),
+        Inventory(staffName: staffName!),
+      ];
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       body: tabs[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
