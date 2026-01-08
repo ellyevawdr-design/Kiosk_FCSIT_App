@@ -19,21 +19,25 @@ class _MenuState extends State<Menu> {
   final List<Map<String, String>> foodItems = [
     {
       "image": "assets/images/sandwich_menu.jpg",
+      "vendor_name": "Vendor A",
       "title": "Beef Sandwich",
       "price": "RM 3.00",
     },
     {
       "image": "assets/images/sandwich_menu.jpg",
+      "vendor_name": "Vendor B",
       "title": "Ham Sandwich",
       "price": "RM 3.00",
     },
     {
       "image": "assets/images/choc_cake.png",
+      "vendor_name": "Vendor C",
       "title": "Cupcakes",
       "price": "RM 3.00",
     },
     {
       "image": "assets/images/choc_cake.png",
+      "vendor_name": "Vendor D",
       "title": "Chocolate Cake",
       "price": "RM 1.50",
     },
@@ -42,6 +46,7 @@ class _MenuState extends State<Menu> {
   final List<Map<String, String>> popularMeals = [
     {
       "image": "assets/images/sandwich_menu.jpg",
+      "vendor_name": "Vendor A",
       "title": "Beef Sandwich",
       "price": "RM 3.00",
     },
@@ -304,6 +309,7 @@ class _MenuState extends State<Menu> {
                   final item = filteredFoodItems[index];
                   return FoodCard(
                     name: item['title']!,
+                    vendorName: item['vendor_name']!,
                     price: item['price']!,
                     image: item['image'],
                     onAdd: () {
@@ -335,6 +341,7 @@ class _MenuState extends State<Menu> {
                   return PopularMealCard(
                     item['image']!,
                     item['title']!,
+                    item['vendor_name']!,
                     item['price']!,
                     onAdd: () {
                       manager.addToCart(item);
@@ -364,6 +371,7 @@ class _MenuState extends State<Menu> {
 /// FOOD CARD
 class FoodCard extends StatelessWidget {
   final String name;
+  final String vendorName;
   final String price;
   final String? image;
   final VoidCallback? onAdd;
@@ -372,6 +380,7 @@ class FoodCard extends StatelessWidget {
   const FoodCard({
     super.key,
     required this.name,
+    required this.vendorName,
     required this.price,
     this.image,
     this.onAdd,
@@ -397,6 +406,7 @@ class FoodCard extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
+          Text(vendorName, style: const TextStyle(color: Colors.white70)),
           Text(price, style: const TextStyle(color: Colors.white70)),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -421,6 +431,7 @@ class FoodCard extends StatelessWidget {
 class PopularMealCard extends StatelessWidget {
   final String img;
   final String title;
+  final String vendorName;
   final String price;
   final VoidCallback? onAdd;
   final VoidCallback? onFavorite;
@@ -428,6 +439,7 @@ class PopularMealCard extends StatelessWidget {
   const PopularMealCard(
     this.img,
     this.title,
+    this.vendorName,
     this.price, {
     this.onAdd,
     this.onFavorite,

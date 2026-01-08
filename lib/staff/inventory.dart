@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'staff_header.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Inventory extends StatefulWidget {
   final String staffName;
   const Inventory({super.key, required this.staffName});
@@ -11,111 +13,70 @@ class Inventory extends StatefulWidget {
 class _InventoryState extends State<Inventory> {
   String selectedCategory = 'All';
 
-  final List<Map<String, dynamic>> menuItems = [
-    {
-      'name': 'Nasi lemak',
-      'vendor': 'Vendor name',
-      'category': 'Meals',
-      'price': 3.50,
-      'stock': 10,
-      'hidden': false,
-    },
-    {
-      'name': 'Mee Goreng',
-      'vendor': 'Vendor name',
-      'category': 'Meals',
-      'price': 4.00,
-      'stock': 8,
-      'hidden': false,
-    },
-    {
-      'name': 'Chocolate Cake',
-      'vendor': 'Vendor name',
-      'category': 'Meals',
-      'price': 3.00,
-      'stock': 3,
-      'hidden': false,
-    },
-  ];
+  final menusRef = FirebaseFirestore.instance.collection('menus');
 
-  List<Map<String, dynamic>> get filteredItems {
-    return menuItems.where((item) {
-      if (item['hidden'] == true) return false;
-      if (selectedCategory == 'All') return true;
-      return item['category'] == selectedCategory;
-    }).toList();
-  }
+  Color stockColor(int stock) =>
+      stock <= 3 ? Colors.orange : Colors.green;
 
-  Color stockColor(int stock) {
-    return stock <= 3 ? Colors.orange : Colors.green;
-  }
+  String stockLabel(int stock) =>
+      stock <= 3 ? 'Low stock' : 'In stock';
 
-  String stockLabel(int stock) {
-    return stock <= 3 ? 'Low stock' : 'In stock';
-  }
-
-  // ===== CATEGORY CHIP =====
-  Widget buildCategoryChip(String label) {
-    final isSelected = selectedCategory == label;
-    return GestureDetector(
-      onTap: () => setState(() => selectedCategory = label),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6C63FF) : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ===== EDIT DIALOG =====
-  void showEditDialog(Map<String, dynamic> item) {
-    final nameCtrl = TextEditingController(text: item['name']);
-    final priceCtrl =
-        TextEditingController(text: item['price'].toString());
-    final stockCtrl =
-        TextEditingController(text: item['stock'].toString());
+  // ===== ADD MENU DIALOG =====
+  void showAddDialog() {
+    final nameCtrl = TextEditingController();
+    final vendorCtrl = TextEditingController();
+    final priceCtrl = TextEditingController();
+    final stockCtrl = TextEditingController();
+    final imageCtrl = TextEditingController();
+    String category = 'Meals';
 
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Edit Menu'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Name')),
-            TextField(
-              controller: priceCtrl,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Price'),
-            ),
-            TextField(
-              controller: stockCtrl,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Stock'),
-            ),
-          ],
+        title: const Text('Add Menu'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Food Name')),
+              TextField(controller: vendorCtrl, decoration: const InputDecoration(labelText: 'Vendor Name')),
+              TextField(controller: priceCtrl, decoration: const InputDecoration(labelText: 'Price (RM 3.00)')),
+              TextField(
+                controller: stockCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Stock'),
+              ),
+              TextField(
+                controller: imageCtrl,
+                decoration: const InputDecoration(labelText: 'Image Path'),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField(
+                value: category,
+                items: ['Meals', 'Drinks', 'Snacks']
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
+                onChanged: (val) => category = val!,
+                decoration: const InputDecoration(labelText: 'Category'),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                item['name'] = nameCtrl.text;
-                item['price'] = double.tryParse(priceCtrl.text) ?? item['price'];
-                item['stock'] = int.tryParse(stockCtrl.text) ?? item['stock'];
+            child: const Text('Save'),
+            onPressed: () async {
+              await menusRef.add({
+                "name": nameCtrl.text,
+                "vendor_name": vendorCtrl.text,
+                "price": priceCtrl.text,
+                "stock": int.parse(stockCtrl.text),
+                "category": category,
+                "image": imageCtrl.text,
+                "hidden": false,
               });
               Navigator.pop(context);
             },
-            child: const Text('Save'),
           ),
         ],
       ),
@@ -123,28 +84,28 @@ class _InventoryState extends State<Inventory> {
   }
 
   // ===== MENU CARD =====
-  Widget buildMenuCard(Map<String, dynamic> item) {
+  Widget buildMenuCard(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    if (data['hidden'] == true) return const SizedBox();
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image placeholder
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                data['image'],
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
               ),
-              child: const Icon(Icons.image, size: 30),
             ),
             const SizedBox(width: 12),
 
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,66 +115,50 @@ class _InventoryState extends State<Inventory> {
                     children: [
                       Expanded(
                         child: Text(
-                          '${item['name']} (${item['vendor']})',
+                          '${data['name']} (${data['vendor_name']})',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: stockColor(item['stock']).withOpacity(0.15),
+                          color: stockColor(data['stock']).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          stockLabel(item['stock']),
-                          style: TextStyle(
-                              color: stockColor(item['stock']), fontSize: 12),
+                          stockLabel(data['stock']),
+                          style: TextStyle(color: stockColor(data['stock']), fontSize: 12),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(item['category'],
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                  Text(data['category'], style: const TextStyle(fontSize: 12)),
                   const SizedBox(height: 6),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('RM ${item['price'].toStringAsFixed(2)}',
-                          style: const TextStyle(
-                              color: Colors.blue, fontWeight: FontWeight.bold)),
-                      Text('Qty: ${item['stock']}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                      Text(data['price'], style: const TextStyle(color: Colors.blue)),
+                      Text('Qty: ${data['stock']}'),
                     ],
                   ),
                   const SizedBox(height: 8),
 
-                  // ===== ACTION BUTTONS (OVERFLOW FIXED) =====
                   Wrap(
                     spacing: 6,
-                    runSpacing: 6,
                     children: [
-                      actionButton(
-                        icon: Icons.edit,
-                        label: 'Edit',
-                        color: Colors.blue,
-                        onTap: () => showEditDialog(item),
-                      ),
                       actionButton(
                         icon: Icons.visibility_off,
                         label: 'Hide',
                         color: Colors.purple,
-                        onTap: () => setState(() => item['hidden'] = true),
+                        onTap: () => doc.reference.update({'hidden': true}),
                       ),
                       actionButton(
                         icon: Icons.delete,
                         label: 'Delete',
                         color: Colors.red,
-                        onTap: () => setState(() => menuItems.remove(item)),
+                        onTap: () => doc.reference.delete(),
                       ),
                     ],
                   ),
@@ -234,7 +179,6 @@ class _InventoryState extends State<Inventory> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
@@ -253,84 +197,70 @@ class _InventoryState extends State<Inventory> {
     );
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: Column(
-      children: [
-        // ✅ STAFF HEADER AT THE TOP
-        StaffHeader(staffName: widget.staffName),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          StaffHeader(staffName: widget.staffName),
 
-        // ✅ PAGE CONTENT
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Add Menu',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search items...',
-                          prefixIcon: const Icon(Icons.search),
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Search items...',
+                            prefixIcon: const Icon(Icons.search),
+                            filled: true,
+                            fillColor: Colors.grey.shade100,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: showAddDialog,
+                        child: const Icon(Icons.add),
                       ),
-                      child: const Icon(Icons.add),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                Row(
-                  children: [
-                    buildCategoryChip('All'),
-                    const SizedBox(width: 8),
-                    buildCategoryChip('Drinks'),
-                    const SizedBox(width: 8),
-                    buildCategoryChip('Meals'),
-                    const SizedBox(width: 8),
-                    buildCategoryChip('Snacks'),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                Expanded(
-                  child: ListView(
-                    children: filteredItems.map(buildMenuCard).toList(),
+                    ],
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 16),
+
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: menusRef.snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+
+                        final docs = snapshot.data!.docs.where((doc) {
+                          final d = doc.data() as Map<String, dynamic>;
+                          if (selectedCategory == 'All') return true;
+                          return d['category'] == selectedCategory;
+                        }).toList();
+
+                        return ListView(
+                          children: docs.map(buildMenuCard).toList(),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }
