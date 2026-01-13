@@ -1,12 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SearchBar;
 import 'package:kiosk_fcsit/utils/widgets/cart_favorrite_manager.dart';
-import 'package:kiosk_fcsit/utils/widgets/category_chip.dart'; 
-import '../utils/widgets/food_card.dart';
-import 'meal_page.dart';
-import 'snack_page.dart';
-import 'drink_page.dart';
-import 'menu.dart' hide FoodCard;
-
+import 'package:kiosk_fcsit/utils/widgets/category_chip.dart';
+import 'package:kiosk_fcsit/utils/widgets/custome_text_field.dart';
+import 'package:kiosk_fcsit/utils/widgets/food_card.dart';
+import 'package:kiosk_fcsit/utils/widgets/speech_mic_service.dart';
 
 class AllPage extends StatefulWidget {
   const AllPage({super.key});
@@ -16,8 +13,16 @@ class AllPage extends StatefulWidget {
 }
 
 class _AllPageState extends State<AllPage> {
+  final TextEditingController _controller = TextEditingController();
+  final SpeechMicService _micService = SpeechMicService();
+  bool _isListening = false;
+
   String _selectedCategory = "All";
   String _searchText = "";
+
+  final manager = CartFavoriteManager.instance;
+
+  late final List<Map<String, String>> allItems;
 
   final List<Map<String, String>> mealItems = [
     {
@@ -72,41 +77,38 @@ class _AllPageState extends State<AllPage> {
     {"title": "Donuts", "vendor name": "Vendor A", "price": "RM 2.50", "image": "assets/images/donut.jpg"},
   ];
 
-  late final List<Map<String, String>> allItems;
-
-  final manager = CartFavoriteManager.instance;
-
   @override
   void initState() {
     super.initState();
     allItems = [...mealItems, ...drinkItems, ...snackItems];
   }
 
+  Future<void> _toggleMic() async {
+    if (_isListening) {
+      _micService.stopListening();
+      setState(() => _isListening = false);
+    } else {
+      bool started = await _micService.startListening(
+        onResult: (text) {
+          _controller.text = text;
+          _controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: text.length),
+          );
+          setState(() => _searchText = text.toLowerCase());
+        },
+      );
+
+      if (started) setState(() => _isListening = true);
+    }
+  }
+
   void _onCategoryTap(String category) {
     if (_selectedCategory == category) return;
-
-    Widget page;
-
-    switch (category) {
-      case "Meal":
-        page = const MealPage();
-        break;
-      case "Drink":
-        page = const DrinkPage();
-        break;
-      case "Snack":
-        page = const SnackPage();
-        break;
-      default:
-        page = const AllPage();
-    }
-
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
+    setState(() => _selectedCategory = category);
   }
 
   List<Map<String, String>> get _displayedItems {
     List<Map<String, String>> baseList;
-
     switch (_selectedCategory) {
       case "Meal":
         baseList = mealItems;
@@ -129,35 +131,36 @@ class _AllPageState extends State<AllPage> {
   }
 
   @override
+  void dispose() {
+    _micService.stopListening();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_selectedCategory),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const Menu()),
-          ),
-        ),
-      ),
+      appBar: AppBar(title: Text(_selectedCategory)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           children: [
             const SizedBox(height: 10),
 
-            //SEARCH BAR
-            SearchBar(
-              onChanged: (value) {
-                setState(() {
-                  _searchText = value.toLowerCase();
-                });
-              },
+            //CustomTextField with Mic
+            CustomTextField(
+              controller: _controller,
+              hintText: "Search here",
+              isMic: true,
+              isListening: _isListening,
+              onPressedSuffixIcon: _toggleMic,
+              onChanged: (value) =>
+                  setState(() => _searchText = value.toLowerCase()),
             ),
 
             const SizedBox(height: 16),
 
+            // CATEGORY CHIPS
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -173,6 +176,7 @@ class _AllPageState extends State<AllPage> {
 
             const SizedBox(height: 20),
 
+            // FOOD CARDS LIST
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -183,18 +187,8 @@ class _AllPageState extends State<AllPage> {
                   name: item['title']!,
                   price: item['price']!,
                   image: item['image'],
-                  onAdd: () {
-                    manager.addToCart(item);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Added to Cart")),
-                    );
-                  },
-                  onFavorite: () {
-                    manager.addToFavorite(item);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Added to Favorite")),
-                    );
-                  },
+                  onAdd: () => manager.addToCart(item),
+                  onFavorite: () => manager.addToFavorite(item),
                 );
               },
             ),
