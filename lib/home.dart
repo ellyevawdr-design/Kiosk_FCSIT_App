@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kiosk_fcsit/menupage/menu.dart'; // <-- import the page you want to go to
+import 'package:kiosk_fcsit/menupage/menu.dart';
+import 'package:kiosk_fcsit/utils/widgets/cart_favorrite_manager.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -59,6 +60,7 @@ class Home extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
+                  CartFavoriteManager.instance.isPickup = false;
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const Menu()),
@@ -92,6 +94,8 @@ class Home extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
+                  CartFavoriteManager.instance.isPickup = true;
+                      "Self-pickup"; 
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const Menu()),

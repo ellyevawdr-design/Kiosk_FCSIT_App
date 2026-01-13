@@ -19,7 +19,6 @@ class _DrinkPageState extends State<DrinkPage> {
   String _searchText = "";
 
   final List<Map<String, String>> drinkItems = [
-    {"title": "Cola", "price": "RM 2.00", "image": "assets/images/cola.png"},
     {
       "title": "Orange Juice",
       "price": "RM 3.00",

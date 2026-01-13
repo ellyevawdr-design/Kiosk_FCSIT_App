@@ -78,7 +78,8 @@ class _CartPageState extends State<CartPage> {
                     child: ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: item['image'] != null
+                        child:
+                            item['image'] != null && item['image']!.isNotEmpty
                             ? Image.asset(
                                 item['image']!,
                                 width: 50,
@@ -88,7 +89,7 @@ class _CartPageState extends State<CartPage> {
                             : const Icon(Icons.fastfood, size: 40),
                       ),
                       title: Text(
-                        item['title']!,
+                        item['name'] ?? 'Unnamed item',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: GestureDetector(
@@ -109,7 +110,7 @@ class _CartPageState extends State<CartPage> {
                         ),
                       ),
                       trailing: Text(
-                        item['price']!,
+                        item['price'] ?? 'RM 0.00',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),

@@ -40,7 +40,7 @@ class _mainstaffState extends State<mainstaff> {
       isLoading = false;
 
       tabs = [
-        StaffPage(staffName: staffName!),
+        StaffPage(),
         OrderScreen(staffName: staffName!),
         Inventory(staffName: staffName!),
       ];

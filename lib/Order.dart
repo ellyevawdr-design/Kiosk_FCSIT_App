@@ -10,7 +10,7 @@ class OrderPage extends StatelessWidget {
     for (var item in CartFavoriteManager.instance.cartItems) {
       final price =
           double.tryParse(item['price']!.replaceAll(RegExp(r'[^0-9.]'), '')) ??
-          0;
+              0;
       total += price;
     }
     return total;
@@ -22,141 +22,62 @@ class OrderPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-
-      // ===== APP BAR =====
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              "Order Summary",
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              "FCSIT",
-              style: TextStyle(fontSize: 14, color: Colors.black54),
-            ),
-          ],
+        title: const Text(
+          "Order Summary",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
-
-      // ===== BODY =====
       body: manager.cartItems.isEmpty
-          ? const Center(
-              child: Text("Your cart is empty", style: TextStyle(fontSize: 16)),
-            )
+          ? const Center(child: Text("Your cart is empty"))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: manager.cartItems.length + 1,
               itemBuilder: (context, index) {
-                // ===== ORDER ITEMS =====
                 if (index < manager.cartItems.length) {
                   final item = manager.cartItems[index];
-
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
                     elevation: 3,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: item['image'] != null
-                                ? Image.asset(
-                                    item['image']!,
-                                    width: 60,
-                                    height: 60,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Container(
-                                    width: 60,
-                                    height: 60,
-                                    color: Colors.grey.shade200,
-                                    child: const Icon(Icons.fastfood, size: 30),
-                                  ),
-                          ),
-
-                          const SizedBox(width: 12),
-
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item['title']!,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  "Qty: 1",
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          Text(
-                            item['price']!,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
+                        borderRadius: BorderRadius.circular(12)),
+                    child: ListTile(
+                      leading: item['image'] != null && item['image']!.isNotEmpty
+                          ? Image.asset(item['image']!,
+                              width: 50, height: 50, fit: BoxFit.cover)
+                          : const Icon(Icons.fastfood, size: 40),
+                      title: Text(item['name'] ?? 'Unnamed Item',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: const Text("Qty: 1"),
+                      trailing: Text(item['price'] ?? 'RM 0.00',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   );
                 }
 
-                // ===== TOTAL SECTION =====
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Divider(),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Total",
+                // Total
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Total",
                           style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "RM ${_getTotal().toStringAsFixed(2)}",
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text("RM ${_getTotal().toStringAsFixed(2)}",
                           style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 );
               },
             ),
-
-      // ===== BOTTOM BUTTON =====
       bottomNavigationBar: manager.cartItems.isEmpty
           ? null
           : Padding(
@@ -165,25 +86,24 @@ class OrderPage extends StatelessWidget {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
+                    // go to payment page, order type is already in CartFavoriteManager
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const PaymentMethodPage()),
+                      MaterialPageRoute(
+                          builder: (_) => PaymentMethodPage(
+                              orderNo:
+                                  "ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}")),
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightBlue.shade400,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    "Select Payment Method",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                      backgroundColor: Colors.lightBlue.shade400,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12))),
+                  child: const Text("Select Payment Method",
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
                 ),
               ),
             ),

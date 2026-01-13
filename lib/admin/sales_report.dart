@@ -258,7 +258,7 @@ class _SalesReportPageState extends State<SalesReportPage> {
   Widget _salesPersonTable() {
     final data = [
       {"name": "Nur Wanis Haris Binti Aiman", "units": 600},
-      {"name": "Gopi Lui Yap (Part-Timer)", "units": 300},
+      {"name": "Dayang NurSofea", "units": 300},
       {"name": "Julian Anak Thomas", "units": 400},
       {"name": "Muhammad Bin Ali", "units": 500},
     ];

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:kiosk_fcsit/utils/widgets/cart_favorrite_manager.dart';
 import 'qr_payment_page.dart';
 import 'order_tracking_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PaymentMethodPage extends StatefulWidget {
-  const PaymentMethodPage({super.key});
+  final String orderNo;
+  const PaymentMethodPage({super.key, required this.orderNo});
 
   @override
   State<PaymentMethodPage> createState() => _PaymentMethodPageState();
@@ -12,9 +15,6 @@ class PaymentMethodPage extends StatefulWidget {
 
 class _PaymentMethodPageState extends State<PaymentMethodPage> {
   final manager = CartFavoriteManager.instance;
-
-  final String orderNo =
-      "ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}";
 
   double _getTotal() {
     double total = 0;
@@ -27,15 +27,46 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     return total;
   }
 
-  void _handlePayment(int method) {
+  Future<void> _saveOrderToFirestore(
+      {required String paymentMethod, required String status}) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    await FirebaseFirestore.instance
+        .collection('Orders')
+        .doc(widget.orderNo)
+        .set({
+      'OrderID': widget.orderNo,
+      'Menus': manager.cartItems.map((e) => e['name']).toList(),
+      'Total': _getTotal(),
+      'Username': user.displayName ?? "Guest",
+      'PaymentMethod': paymentMethod,
+      'Status': status,
+      'Date': DateTime.now().toIso8601String(),
+    });
+  }
+
+  void _handlePayment(int method) async {
+    String status = "Pending";
+
+    if (manager.isPickup) {
+      status = "Prepare"; // pickup order
+    } else {
+      if (method == 2 || method == 3) status = "Complete"; // self-service QR/TnG
+    }
+
     switch (method) {
       case 1:
-        // Cash on Delivery
+        // Cash
+        await _saveOrderToFirestore(paymentMethod: "Cash", status: status);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                OrderTrackingPage(orderNo: orderNo, isPaid: false),
+            builder: (_) => OrderTrackingPage(
+              orderNo: widget.orderNo,
+              initialStatus: status,
+              isPaid: false,
+            ),
           ),
         );
         break;
@@ -45,7 +76,11 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => QRPaymentPage(orderNo: orderNo),
+            builder: (_) => QRPaymentPage(
+              orderNo: widget.orderNo,
+              paymentMethod: "Touch 'n Go",
+              isPickup: manager.isPickup,
+            ),
           ),
         );
         break;
@@ -55,18 +90,19 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => QRPaymentPage(orderNo: orderNo),
+            builder: (_) => QRPaymentPage(
+              orderNo: widget.orderNo,
+              paymentMethod: "DuitNow",
+              isPickup: manager.isPickup,
+            ),
           ),
         );
         break;
     }
   }
 
-  Widget _paymentCard({
-    required String title,
-    required IconData icon,
-    required int method,
-  }) {
+  Widget _paymentCard(
+      {required String title, required IconData icon, required int method}) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -87,8 +123,6 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
-      // ===== APP BAR =====
       appBar: AppBar(
         title: const Text("Select Payment Method"),
         backgroundColor: Colors.transparent,
@@ -100,44 +134,23 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           fontSize: 18,
         ),
       ),
-
-      // ===== BODY =====
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Order No: $orderNo",
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              "Order No: ${widget.orderNo}",
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-
             const SizedBox(height: 12),
-
+            _paymentCard(title: "Cash", icon: Icons.payments, method: 1),
             _paymentCard(
-              title: "Cash",
-              icon: Icons.payments,
-              method: 1,
-            ),
-
-            _paymentCard(
-              title: "Touch 'n Go eWallet",
-              icon: Icons.account_balance_wallet,
-              method: 2,
-            ),
-
-            _paymentCard(
-              title: "DuitNow QR",
-              icon: Icons.qr_code,
-              method: 3,
-            ),
-
+                title: "Touch 'n Go eWallet",
+                icon: Icons.account_balance_wallet,
+                method: 2),
+            _paymentCard(title: "DuitNow QR", icon: Icons.qr_code, method: 3),
             const Spacer(),
-
-            // ===== TOTAL SECTION =====
             Container(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
               decoration: BoxDecoration(
@@ -149,22 +162,15 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 children: [
                   const Text(
                     "Total",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     "RM ${_getTotal().toStringAsFixed(2)}",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
           ],
         ),

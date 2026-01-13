@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'cart_model.dart';
-import '../menupage/menu.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OrderTrackingPage extends StatefulWidget {
   final String orderNo;
+  final String initialStatus;
   final bool isPaid;
 
   const OrderTrackingPage({
     super.key,
     required this.orderNo,
+    required this.initialStatus,
     required this.isPaid,
   });
 
@@ -17,189 +18,86 @@ class OrderTrackingPage extends StatefulWidget {
 }
 
 class _OrderTrackingPageState extends State<OrderTrackingPage> {
-  final List<String> steps = ["Menu", "Cart", "Checkout"];
-  int currentStep = 0;
-
-  final cart = CartModel.instance;
+  String status = "";
+  late final Stream<DocumentSnapshot> orderStream;
 
   @override
   void initState() {
     super.initState();
-    _simulateOrderProgress();
+    status = widget.initialStatus;
+    orderStream = FirebaseFirestore.instance
+        .collection('Orders')
+        .doc(widget.orderNo)
+        .snapshots();
   }
 
-  /// FIXED ORDER PROGRESSION
-  Future<void> _simulateOrderProgress() async {
-    for (int i = 0; i < steps.length; i++) {
-      await Future.delayed(const Duration(seconds: 2));
-      if (!mounted) return;
-      setState(() {
-        currentStep = i;
-      });
-    }
-  }
-
-  Color _circleColor(int stepIndex) {
-    if (stepIndex < currentStep) return Colors.green;
-    if (stepIndex == currentStep) return Colors.blue;
-    return Colors.grey;
-  }
-
-  Color _lineColor(int stepIndex) {
-    if (stepIndex < currentStep) return Colors.green;
-    return Colors.grey;
-  }
-
-  String getImageForItem(String name) {
-    switch (name) {
-      case "Beef Sandwich":
-        return "assets/images/beef_sandwich.png";
-      case "Ham Sandwich":
-        return "assets/images/ham_sandwich.png";
-      case "Cheese Sandwich":
-        return "assets/images/cheese_sandwich.png";
-      default:
-        return "assets/images/default_food.png";
-    }
+  /// Update status locally and in Firestore
+  Future<void> _updateStatus(String newStatus) async {
+    setState(() => status = newStatus);
+    await FirebaseFirestore.instance
+        .collection('Orders')
+        .doc(widget.orderNo)
+        .update({'Status': newStatus});
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool orderCompleted = currentStep == steps.length - 1;
-
     return Scaffold(
       appBar: AppBar(title: const Text("Track Order")),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Order No: ${widget.orderNo}",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 24),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: orderStream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
-            /// ===== PROGRESS BAR (UNCHANGED DESIGN) =====
-            Row(
-              children: List.generate(steps.length * 2 - 1, (index) {
-                if (index.isEven) {
-                  int stepIndex = index ~/ 2;
-                  return Column(
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 500),
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: _circleColor(stepIndex),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Icon(
-                            stepIndex < currentStep ? Icons.check : null,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        steps[stepIndex],
-                        style: TextStyle(
-                          color: _circleColor(stepIndex),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  );
-                } else {
-                  int lineIndex = (index - 1) ~/ 2;
-                  return Expanded(
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      height: 4,
-                      color: _lineColor(lineIndex),
+          final orderData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+          final currentStatus = orderData['Status'] ?? status;
+          final menus = List<String>.from(orderData['Menus'] ?? []);
+
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Order No: ${widget.orderNo}",
+                    style:
+                        const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 16),
+                Text("Payment: ${orderData['PaymentMethod'] ?? '-'}",
+                    style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 16),
+                Text("Status: $currentStatus",
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                const Text("Items:", style: TextStyle(fontWeight: FontWeight.bold)),
+                ...menus.map((e) => ListTile(title: Text(e))),
+                const SizedBox(height: 24),
+                if (widget.isPaid == false && currentStatus == "Pending")
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () => _updateStatus("Complete"),
+                      child: const Text("Mark as Complete"),
                     ),
-                  );
-                }
-              }),
-            ),
-
-            const SizedBox(height: 24),
-
-            const Text(
-              "Items:",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount: cart.items.length,
-                itemBuilder: (context, index) {
-                  final item = cart.items[index];
-                  return ListTile(
-                    title: Text(item.name),
-                    subtitle: Text("Quantity: ${item.quantity}"),
-                    trailing: SizedBox(
-                      width: 50,
-                      height: 50,
-                      child: Image.asset(
-                        getImageForItem(item.name),
-                        fit: BoxFit.cover,
-                      ),
+                  ),
+                if (currentStatus == "Prepare")
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () => _updateStatus("Ready for Pickup"),
+                      child: const Text("Mark as Ready"),
                     ),
-                  );
-                },
-              ),
+                  ),
+                if (currentStatus == "Ready for Pickup")
+                  const Text("Your order is ready for pickup!",
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
+              ],
             ),
-
-            const SizedBox(height: 16),
-
-            ListTile(
-              leading: const Icon(Icons.restaurant, size: 32),
-              title: const Text(
-                "Cutlery",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(cart.cutleryAdded ? "Requested" : "Not Requested"),
-            ),
-
-            const Divider(height: 32, thickness: 1),
-
-            ListTile(
-              title: const Text(
-                "Payment Status",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(widget.isPaid ? "Paid" : "Cash on Delivery"),
-              trailing: Icon(
-                widget.isPaid ? Icons.check_circle : Icons.money,
-                color: widget.isPaid ? Colors.green : Colors.orange,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            /// ===== FINAL BUTTON =====
-            if (orderCompleted)
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const Menu()),
-                    );
-                  },
-                  child: const Text("Order Completed"),
-                ),
-              ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

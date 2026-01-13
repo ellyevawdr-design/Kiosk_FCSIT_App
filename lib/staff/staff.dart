@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'staff_header.dart';
 
 class StaffPage extends StatefulWidget {
-  final String staffName;
-
-  const StaffPage({super.key, required this.staffName});
+  const StaffPage({super.key});
 
   @override
   State<StaffPage> createState() => _StaffPageState();
@@ -27,23 +27,27 @@ class _StaffPageState extends State<StaffPage> {
     "Night Shift",
   ];
 
-  // Hardcoded schedule per staff (for demo)
-  final Map<String, Map<String, String>> staffSchedules = {
-    "Nuraqilah Binti Jolihi": {
-      "2025-12-28": "Morning Shift",
-      "2025-12-29": "Afternoon Shift",
-    },
-    "Ahmad Bin Ali": {
-      "2025-12-28": "Afternoon Shift",
-      "2025-12-29": "Morning Shift",
-    },
-  };
+  String staffName = "";
 
-  String getShift(String staffName, DateTime date) {
-    String key = DateFormat('yyyy-MM-dd').format(date);
-    return staffSchedules[staffName]?[key] ?? "No Schedule";
+  @override
+  void initState() {
+    super.initState();
+    fetchStaffName();
   }
 
+  /// Fetch staff name from users collection
+  Future<void> fetchStaffName() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    if (doc.exists) {
+      setState(() {
+        staffName = doc['name'];
+      });
+    }
+  }
+
+  /// Show replacement request dialog
   void showReplacementDialog() {
     replacementDate = null;
     replacementShift = null;
@@ -57,7 +61,6 @@ class _StaffPageState extends State<StaffPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date picker
               Text("Pick Date"),
               SizedBox(height: 6),
               GestureDetector(
@@ -88,8 +91,6 @@ class _StaffPageState extends State<StaffPage> {
                 ),
               ),
               SizedBox(height: 12),
-
-              // Shift Dropdown
               Text("Pick Shift"),
               SizedBox(height: 6),
               DropdownButtonFormField<String>(
@@ -105,8 +106,6 @@ class _StaffPageState extends State<StaffPage> {
                 },
               ),
               SizedBox(height: 12),
-
-              // Reason input
               Text("Reason"),
               SizedBox(height: 6),
               TextField(
@@ -121,35 +120,27 @@ class _StaffPageState extends State<StaffPage> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
           ElevatedButton(
             onPressed: () {
               if (replacementDate == null ||
                   replacementShift == null ||
                   reasonController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Please fill all fields")),
-                );
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text("Please fill all fields")));
                 return;
               }
 
-              // Here you can send this request to your database or backend
               print("Replacement Request:");
-              print("Staff: ${widget.staffName}");
-              print(
-                "Date: ${DateFormat('yyyy-MM-dd').format(replacementDate!)}",
-              );
+              print("Staff: $staffName");
+              print("Date: ${DateFormat('yyyy-MM-dd').format(replacementDate!)}");
               print("Shift: $replacementShift");
               print("Reason: ${reasonController.text}");
 
               Navigator.pop(context);
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Replacement request submitted")),
-              );
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text("Replacement request submitted")));
             },
             child: Text("Submit"),
           ),
@@ -160,140 +151,137 @@ class _StaffPageState extends State<StaffPage> {
 
   @override
   Widget build(BuildContext context) {
-    String todayFormatted = DateFormat(
-      'EEEE, dd MMM yyyy',
-    ).format(DateTime.now());
-    String shiftToday = getShift(widget.staffName, DateTime.now());
-    String shiftSelected = getShift(widget.staffName, selectedScheduleDate);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return Center(child: Text("No user logged in"));
+    }
+
+    final todayKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final selectedKey = DateFormat('yyyy-MM-dd').format(selectedScheduleDate);
 
     return Column(
       children: [
-        StaffHeader(staffName: widget.staffName),
-
-        // ===== MAIN CONTENT =====
+        StaffHeader(staffName: staffName),
         Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ATTENDANCE
-                Text(
-                  "Staff Attendance",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  todayFormatted,
-                  style: TextStyle(color: Color.fromARGB(255, 46, 46, 46)),
-                ),
-                SizedBox(height: 20),
-                StaffCard(
-                  name: widget.staffName,
-                  shift: shiftToday,
-                  checkedIn: checkedIn,
-                  onCheckIn: () {
-                    setState(() {
-                      checkedIn = true;
-                    });
-                  },
-                ),
-                SizedBox(height: 20),
+          child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .collection('Shift')
+                .doc(user.uid)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
 
-                // REQUEST REPLACEMENT BUTTON
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: showReplacementDialog,
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Color(0xFF3B47FF),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      "Request Staff Replacement",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 30),
+              if (!snapshot.hasData || snapshot.data!.data() == null) {
+                return Center(child: Text("No schedule found"));
+              }
 
-                // SCHEDULE
-                Text(
-                  "Staff Schedule",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 8),
+              final scheduleData = snapshot.data!.data()!;
+              final shiftToday = scheduleData[todayKey] ?? "Off";
+              final shiftSelected = scheduleData[selectedKey] ?? "Off";
 
-                GestureDetector(
-                  onTap: () async {
-                    DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: selectedScheduleDate,
-                      firstDate: DateTime(2025, 1, 1),
-                      lastDate: DateTime(2026, 12, 31),
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        selectedScheduleDate = picked;
-                      });
-                    }
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(10),
+              return SingleChildScrollView(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Attendance
+                    Text("Staff Attendance",
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 4),
+                    Text(DateFormat('EEEE, dd MMM yyyy').format(DateTime.now()),
+                        style: TextStyle(color: Color.fromARGB(255, 46, 46, 46))),
+                    SizedBox(height: 20),
+                    StaffCard(
+                      name: staffName,
+                      shift: shiftToday,
+                      checkedIn: checkedIn,
+                      onCheckIn: () {
+                        setState(() {
+                          checkedIn = true;
+                        });
+                      },
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          DateFormat(
-                            'EEEE, dd MMM yyyy',
-                          ).format(selectedScheduleDate),
+                    SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: showReplacementDialog,
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Color(0xFF3B47FF),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                         ),
-                        Icon(Icons.calendar_today),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 12),
-                Container(
-                  padding: EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 6,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Shift",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      Text(
-                        shiftSelected,
-                        style: TextStyle(
-                          color: shiftSelected == "Off"
-                              ? Colors.red
-                              : Colors.black,
+                        child: Text(
+                          "Request Staff Replacement",
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: 30),
+                    // Schedule
+                    Text("Staff Schedule",
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () async {
+                        DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedScheduleDate,
+                          firstDate: DateTime(2025, 1, 1),
+                          lastDate: DateTime(2026, 12, 31),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            selectedScheduleDate = picked;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(DateFormat('EEEE, dd MMM yyyy')
+                                .format(selectedScheduleDate)),
+                            Icon(Icons.calendar_today),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Container(
+                      padding: EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black12, blurRadius: 6, offset: Offset(0, 3))
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Shift", style: TextStyle(fontWeight: FontWeight.w600)),
+                          Text(
+                            shiftSelected,
+                            style: TextStyle(
+                                color: shiftSelected == "Off" ? Colors.red : Colors.black),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ],
@@ -301,7 +289,7 @@ class _StaffPageState extends State<StaffPage> {
   }
 }
 
-// STAFF CARD
+/// Staff Card
 class StaffCard extends StatelessWidget {
   final String name;
   final String shift;
@@ -333,16 +321,11 @@ class StaffCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                name,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
+              Text(name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
               SizedBox(height: 4),
               Text(
                 shift,
-                style: TextStyle(
-                  color: shift == "Off" ? Colors.red : Colors.black,
-                ),
+                style: TextStyle(color: shift == "Off" ? Colors.red : Colors.black),
               ),
             ],
           ),
@@ -363,10 +346,7 @@ class StaffCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: Text(
-                    "Check-in",
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: Text("Check-in", style: TextStyle(color: Colors.white)),
                 ),
         ],
       ),

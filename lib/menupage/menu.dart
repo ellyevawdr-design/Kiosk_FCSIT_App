@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+
 import 'package:kiosk_fcsit/navbar/cart.dart';
 import 'package:kiosk_fcsit/navbar/favorite.dart';
 import 'package:kiosk_fcsit/profile_page.dart';
 import 'package:kiosk_fcsit/utils/widgets/cart_favorrite_manager.dart';
-import 'drink_page.dart';
-import 'meal_page.dart';
-import 'snack_page.dart';
-import 'all_page.dart';
 
 class Menu extends StatefulWidget {
   const Menu({super.key});
@@ -16,90 +15,59 @@ class Menu extends StatefulWidget {
 }
 
 class _MenuState extends State<Menu> {
-  final List<Map<String, String>> foodItems = [
-    {
-      "image": "assets/images/sandwich_menu.jpg",
-      "vendor_name": "Vendor A",
-      "title": "Beef Sandwich",
-      "price": "RM 3.00",
-    },
-    {
-      "image": "assets/images/sandwich_menu.jpg",
-      "vendor_name": "Vendor B",
-      "title": "Ham Sandwich",
-      "price": "RM 3.00",
-    },
-    {
-      "image": "assets/images/choc_cake.png",
-      "vendor_name": "Vendor C",
-      "title": "Cupcakes",
-      "price": "RM 3.00",
-    },
-    {
-      "image": "assets/images/choc_cake.png",
-      "vendor_name": "Vendor D",
-      "title": "Chocolate Cake",
-      "price": "RM 1.50",
-    },
-  ];
-
-  final List<Map<String, String>> popularMeals = [
-    {
-      "image": "assets/images/sandwich_menu.jpg",
-      "vendor_name": "Vendor A",
-      "title": "Beef Sandwich",
-      "price": "RM 3.00",
-    },
-  ];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CartFavoriteManager manager = CartFavoriteManager.instance;
 
   final List<String> _categories = ["All", "Meal", "Drink", "Snack"];
   String _selectedCategory = "All";
-
   String _searchText = "";
 
-  final manager = CartFavoriteManager.instance;
+  final TextEditingController _searchController = TextEditingController();
+
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _speech = stt.SpeechToText();
+  }
 
   void _onCategoryTap(String category) {
-    if (_selectedCategory == category) return;
     setState(() => _selectedCategory = category);
+  }
 
-    switch (category) {
-      case "All":
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AllPage()),
-        );
-        break;
+  /// 🎤 SPEECH TO TEXT
+  Future<void> _startListening() async {
+    bool available = await _speech.initialize();
+    if (!available) return;
 
-      case "Meal":
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const MealPage()),
-        );
-        break;
+    setState(() => _isListening = true);
 
-      case "Drink":
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const DrinkPage()),
-        );
-        break;
+    _speech.listen(
+      onResult: (result) {
+        setState(() {
+          _searchText = result.recognizedWords;
+          _searchController.text = _searchText;
+        });
+      },
+    );
+  }
 
-      case "Snack":
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SnackPage()),
-        );
-        break;
-    }
+  void _stopListening() {
+    _speech.stop();
+    setState(() => _isListening = false);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _speech.stop();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredFoodItems = foodItems.where((item) {
-      return item['title']!.toLowerCase().contains(_searchText.toLowerCase());
-    }).toList();
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -125,7 +93,9 @@ class _MenuState extends State<Menu> {
                       } else {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const FavoritePage()),
+                          MaterialPageRoute(
+                            builder: (_) => const FavoritePage(),
+                          ),
                         );
                       }
                     },
@@ -187,25 +157,20 @@ class _MenuState extends State<Menu> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          GestureDetector(
-                            onTap: () {
-                              //Routemaster.of(context).replace('/ordertype');
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text(
-                                "Order Now",
-                                style: TextStyle(
-                                  color: Color(0xFF4A90E2),
-                                  fontWeight: FontWeight.bold,
-                                ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              "Order Now",
+                              style: TextStyle(
+                                color: Color(0xFF4A90E2),
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
@@ -226,12 +191,9 @@ class _MenuState extends State<Menu> {
 
               const SizedBox(height: 20),
 
-              /// SEARCH BAR
+              /// 🔍 SEARCH BAR + 🎤 VOICE
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFFE8F1FF),
                   borderRadius: BorderRadius.circular(20),
@@ -242,10 +204,9 @@ class _MenuState extends State<Menu> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
+                        controller: _searchController,
                         onChanged: (value) {
-                          setState(() {
-                            _searchText = value;
-                          });
+                          setState(() => _searchText = value);
                         },
                         decoration: const InputDecoration(
                           hintText: "Search here",
@@ -254,14 +215,20 @@ class _MenuState extends State<Menu> {
                         ),
                       ),
                     ),
-                    const Icon(Icons.mic_none, color: Colors.black54),
+                    IconButton(
+                      icon: Icon(
+                        _isListening ? Icons.mic : Icons.mic_none,
+                        color: _isListening ? Colors.red : Colors.black54,
+                      ),
+                      onPressed: _isListening ? _stopListening : _startListening,
+                    ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 16),
 
-              /// CATEGORY CHIPS
+              /// CATEGORY
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -294,69 +261,75 @@ class _MenuState extends State<Menu> {
 
               const SizedBox(height: 20),
 
-              /// FOOD GRID
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredFoodItems.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.72,
-                ),
-                itemBuilder: (context, index) {
-                  final item = filteredFoodItems[index];
-                  return FoodCard(
-                    name: item['title']!,
-                    vendorName: item['vendor_name']!,
-                    price: item['price']!,
-                    image: item['image'],
-                    onAdd: () {
-                      manager.addToCart(item);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Added to Cart")),
-                      );
-                    },
-                    onFavorite: () {
-                      manager.addToFavorite(item);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Added to Favorite")),
+              /// FIRESTORE MENU
+              StreamBuilder<QuerySnapshot>(
+                stream: _selectedCategory == "All"
+                    ? _firestore.collection('menus').snapshots()
+                    : _firestore
+                        .collection('menus')
+                        .where('category', isEqualTo: _selectedCategory)
+                        .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(child: Text("No menu available"));
+                  }
+
+                  final docs = snapshot.data!.docs.where((doc) {
+                    final name = doc['name'].toString().toLowerCase();
+                    return name.contains(_searchText.toLowerCase());
+                  }).toList();
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: docs.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.72,
+                    ),
+                    itemBuilder: (context, index) {
+                      final data = docs[index].data() as Map<String, dynamic>;
+
+                      return FoodCard(
+                        name: data['name'],
+                        vendorName: data['vendor_name'],
+                        price: data['price'].toString(),
+                        image: data['image'],
+                        onAdd: () {
+                          manager.addToCart({
+                            "name": data['name'],
+                            "vendor_name": data['vendor_name'],
+                            "price": data['price'].toString(),
+                            "image": data['image'],
+                          });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Added to Cart")),
+                          );
+                        },
+                        onFavorite: () {
+                          manager.addToFavorite({
+                            "name": data['name'],
+                            "vendor_name": data['vendor_name'],
+                            "price": data['price'].toString(),
+                            "image": data['image'],
+                          });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Added to Favorite")),
+                          );
+                        },
                       );
                     },
                   );
                 },
-              ),
-
-              const SizedBox(height: 20),
-
-              /// POPULAR MEALS
-              const Text(
-                "Popular Meals",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              Column(
-                children: popularMeals.map((item) {
-                  return PopularMealCard(
-                    item['image']!,
-                    item['title']!,
-                    item['vendor_name']!,
-                    item['price']!,
-                    onAdd: () {
-                      manager.addToCart(item);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Added to Cart")),
-                      );
-                    },
-                    onFavorite: () {
-                      manager.addToFavorite(item);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Added to Favorite")),
-                      );
-                    },
-                  );
-                }).toList(),
               ),
 
               const SizedBox(height: 40),
@@ -368,7 +341,7 @@ class _MenuState extends State<Menu> {
   }
 }
 
-/// FOOD CARD
+/// ================= FOOD CARD =================
 class FoodCard extends StatelessWidget {
   final String name;
   final String vendorName;
@@ -399,20 +372,18 @@ class FoodCard extends StatelessWidget {
         children: [
           Expanded(child: Image.asset(image!, fit: BoxFit.contain)),
           const SizedBox(height: 8),
-          Text(
-            name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(vendorName, style: const TextStyle(color: Colors.white70)),
+          Text(name,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold)),
+          Text(vendorName,
+              style: const TextStyle(color: Colors.white70)),
           Text(price, style: const TextStyle(color: Colors.white70)),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               IconButton(
-                icon: const Icon(Icons.favorite_border, color: Colors.white),
+                icon:
+                    const Icon(Icons.favorite_border, color: Colors.white),
                 onPressed: onFavorite,
               ),
               IconButton(
@@ -420,64 +391,6 @@ class FoodCard extends StatelessWidget {
                 onPressed: onAdd,
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// POPULAR MEAL CARD
-class PopularMealCard extends StatelessWidget {
-  final String img;
-  final String title;
-  final String vendorName;
-  final String price;
-  final VoidCallback? onAdd;
-  final VoidCallback? onFavorite;
-
-  const PopularMealCard(
-    this.img,
-    this.title,
-    this.vendorName,
-    this.price, {
-    this.onAdd,
-    this.onFavorite,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F1FF),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Image.asset(img, height: 60, width: 60),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(price, style: const TextStyle(color: Colors.black54)),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.favorite_border),
-            onPressed: onFavorite,
-          ),
-          IconButton(
-            icon: const Icon(Icons.add_circle, color: Color(0xFF4A90E2)),
-            onPressed: onAdd,
           ),
         ],
       ),

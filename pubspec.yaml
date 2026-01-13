@@ -40,12 +40,9 @@ dependencies:
   flutter_riverpod: ^3.1.0       # For Riverpod
   intl: ^0.20.2
   fl_chart: ^1.1.1
-<<<<<<< HEAD
   image_picker: ^1.0.7
   google_mlkit_text_recognition: ^0.11.0
-=======
   speech_to_text: ^7.0.1
->>>>>>> fca309b09251279cd15dae36efc9455793d48c84
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8

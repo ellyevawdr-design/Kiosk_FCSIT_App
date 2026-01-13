@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'order_tracking_page.dart';
+import '../menupage/menu.dart';
 
 class PaymentSuccessPage extends StatelessWidget {
   final String orderNo;
@@ -14,12 +14,12 @@ class PaymentSuccessPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.check_circle,
-                  size: 120, color: Colors.green),
+              const Icon(Icons.check_circle, size: 120, color: Colors.green),
               const SizedBox(height: 16),
-              const Text("Payment Successful",
-                  style:
-                      TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const Text(
+                "Payment Successful",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Text("Order No: $orderNo"),
               const SizedBox(height: 24),
@@ -28,15 +28,12 @@ class PaymentSuccessPage extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacement(
+                    Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            OrderTrackingPage(orderNo: orderNo, isPaid: true),
-                      ),
+                      MaterialPageRoute(builder: (context) => const Menu()),
                     );
                   },
-                  child: const Text("Track Order"),
+                  child: const Text("Back to Menu"),
                 ),
               ),
             ],

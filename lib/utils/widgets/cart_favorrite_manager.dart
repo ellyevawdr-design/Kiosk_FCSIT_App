@@ -6,6 +6,8 @@ class CartFavoriteManager {
   List<Map<String, String>> cartItems = [];
   List<Map<String, String>> favoriteItems = [];
 
+  bool isPickup = false;
+
   void addToCart(Map<String, String> item) {
     cartItems.add(item);
   }
@@ -20,5 +22,9 @@ class CartFavoriteManager {
 
   void removeFromFavorite(int index) {
     favoriteItems.removeAt(index);
+  }
+
+   void clearCart() {
+    cartItems.clear();
   }
 }

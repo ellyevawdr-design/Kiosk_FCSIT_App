@@ -27,35 +27,30 @@ class _AllPageState extends State<AllPage> {
   final List<Map<String, String>> mealItems = [
     {
       "title": "Beef Sandwich",
-      "vendor name": "Vendor A",
       "price": "RM 3.00",
       "image": "assets/images/beef.jpg",
     },
     {
       "title": "Ham Sandwich",
-      "vendor name": "Vendor B",
       "price": "RM 3.00",
       "image": "assets/images/ham.jpg",
     },
     {
       "title": "Chicken Rice",
-      "vendor name": "Vendor A",
       "price": "RM 5.00",
       "image": "assets/images/nasi_ayam.jpg",
     },
   ];
 
   final List<Map<String, String>> drinkItems = [
-    {"title": "Cola", "vendor name": "Vendor B", "price": "RM 2.00", "image": "assets/images/cola.png"},
+    {"title": "Cola", "price": "RM 2.00", "image": "assets/images/cola.png"},
     {
       "title": "Orange Juice",
-      "vendor name": "Vendor A",
       "price": "RM 3.00",
       "image": "assets/images/orange.jpg",
     },
     {
       "title": "Coffee",
-      "vendor name": "Vendor B",
       "price": "RM 4.00",
       "image": "assets/images/coffee.jpg",
     },
@@ -64,17 +59,15 @@ class _AllPageState extends State<AllPage> {
   final List<Map<String, String>> snackItems = [
     {
       "title": "Cupcakes",
-      "vendor name": "Vendor A",
       "price": "RM 3.00",
       "image": "assets/images/cupcake.jpg",
     },
     {
       "title": "Steam Pau",
-      "vendor name": "Vendor B",
       "price": "RM 1.50",
       "image": "assets/images/pau.jpg",
     },
-    {"title": "Donuts", "vendor name": "Vendor A", "price": "RM 2.50", "image": "assets/images/donut.jpg"},
+    {"title": "Donuts", "price": "RM 2.50", "image": "assets/images/donut.jpg"},
   ];
 
   @override
