@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:kiosk_fcsit/firebase_options.dart';
 import 'admin_staff.dart';
 import 'sales_report.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -18,7 +21,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Admin Portal',
       theme: ThemeData(
-        primaryColor: const Color.fromRGBO(88, 100, 235, 1), // admin blue
+        primaryColor: const Color.fromRGBO(88, 100, 235, 1),
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(
           backgroundColor: Color.fromRGBO(88, 100, 235, 1),
@@ -51,9 +54,9 @@ class _AdminHomeState extends State<AdminHome> {
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: const Color.fromRGBO(88, 100, 235, 1), // blue icon
+        selectedItemColor: const Color.fromRGBO(88, 100, 235, 1),
         unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white, // white background
+        backgroundColor: Colors.white,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
@@ -65,9 +68,7 @@ class _AdminHomeState extends State<AdminHome> {
           ),
         ],
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          setState(() => _currentIndex = index);
         },
       ),
     );
